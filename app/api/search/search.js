@@ -422,7 +422,21 @@ const search = {
     });
   },
 
-  bulkIndex(docs, _action = 'index') {
+  async bulkIndex(docs, _action = 'index') {
+    const templates = await templatesModel.get({ _id: { $in: docs.map((d) => d.template) } });
+    const props = templates.reduce((properties, template) => {
+      return properties.concat(template.properties);
+    }, []);
+
+    const toTranslateProps = props.filter(p => p.type === 'select');
+    const thesauriIds = toTranslateProps.filter(p => p.type === 'select').map(p => p.content);
+    const thesauris = await dictionariesModel.get({ _id: { $in: thesauriIds } });
+    const thesauriValues = thesauris.reduce((values, t) => {
+      return values.concat(t.values);
+    }, []);
+
+    console.log(thesauriValues);
+
     const type = 'entity';
     const body = [];
     docs.forEach((doc) => {
@@ -431,6 +445,13 @@ const search = {
       delete doc._id;
       delete doc._rev;
       delete doc.pdfInfo;
+
+      doc._metadata = {};
+
+      toTranslateProps.forEach((prop) => {
+        // doc._metadata[prop.name] = doc.metadata[prop.name]
+        doc._metadata[prop.name] = thesauriValues.find((t) => t.id === doc.metadata[prop.name]).label;
+      });
 
       let action = {};
       action[_action] = { _index: elasticIndexes.index, _type: type, _id: id };
