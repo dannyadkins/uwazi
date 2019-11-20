@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - TestLocalDynRH",
+            "request": "launch",
+            "mainClass": "org.crypto.sse.TestLocalDynRH",
+            "projectName": "Clusion"
+        }
+    ]
+}
