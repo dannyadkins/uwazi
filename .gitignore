@@ -27,3 +27,24 @@ custom_uploads/*
 .idea
 .env
 test
+# dependencies
+node_modules
+
+# misc
+.DS_Store
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+*.jar
+*.jar.original
+*.class
+
+Java/Clusion
+Java/JMain/.classpath
+Java/JMain/.project
+Java/JMain/.settings
+Java/JMain/.vscode
+Java/JMain/target/salt
+Java/JMain/target/classes
