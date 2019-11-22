@@ -27,3 +27,17 @@ custom_uploads/*
 .idea
 .env
 test
+
+
+
+# Andy & Danny additions
+*.jar
+*.jar.original
+*.class
+
+Java/Clusion
+Java/JMain/.classpath
+Java/JMain/.project
+Java/JMain/.settings
+Java/JMain/.vscode
+Java/JMain/target
