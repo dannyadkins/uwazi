@@ -107,24 +107,62 @@ export function makeEmm() {
   });
 }
 
+export function genTokenUp(password, keywords, title, dateCreated, docId) {
+  return new Promise(resolve => {
+    superagent
+      .post('http://localhost:8081/client-api')
+      .set('Accept', 'application/json')
+      .set('Content-Type', 'application/json')
+      .set('X-Requested-With', 'XMLHttpRequest')
+      .set('Access-Control-Allow-Credentials', 'true')
+      .set('Access-Control-Allow-Origin', 'http://localhost:3000')
+      .send({
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'GenTokenUp',
+        params: {
+          password: password,
+          keywords: keywords,
+          metadata: {
+            title: title,
+            dateCreated: dateCreated,
+            docId: docId,
+          },
+        },
+      })
+      .then(response => {
+        resolve(JSON.parse(response.text).result);
+      });
+  });
+}
+
 export function upload(docId, file, endpoint = 'upload') {
   return dispatch =>
-    new Promise(resolve => {
-      superagent
-        .post(`${APIURL}import`)
-        .set('Accept', 'application/json')
-        .set('X-Requested-With', 'XMLHttpRequest')
-        .field('template', template)
-        .attach('file', file, file.name)
-        .on('progress', data => {
-          dispatch(basicActions.set('importUploadProgress', Math.floor(data.percent)));
-        })
-        .on('response', response => {
-          dispatch(basicActions.set('importUploadProgress', 0));
-          resolve(response);
-        })
-        .end();
-    });
+    Promise.all([
+      new Promise(resolve => {
+        superagent
+          .post(`${APIURL}import`)
+          .set('Accept', 'application/json')
+          .set('X-Requested-With', 'XMLHttpRequest')
+          .field('template', template)
+          .attach('file', file, file.name)
+          .on('progress', data => {
+            dispatch(basicActions.set('importUploadProgress', Math.floor(data.percent)));
+          })
+          .on('response', response => {
+            dispatch(basicActions.set('importUploadProgress', 0));
+            console.log('File uploaded.');
+          })
+          .end();
+      }),
+      new Promise(resolve => {
+        genTokenUp('password', ['key'], file.name, 0, docId).then(response => {
+          var tokenUp = response;
+          console.log('TokenUp: ' + tokenUp);
+          // TODO: use the tokenUp
+        });
+      }),
+    ]);
 }
 
 export function publicSubmit(data, remote = false) {
