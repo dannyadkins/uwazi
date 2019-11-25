@@ -107,7 +107,11 @@ export function makeEmm() {
   });
 }
 
-export function genTokenUp(password, keywords, title, dateCreated, docId) {
+export function genTokenUp(secret, keywords, title, dateCreated, docId) {
+  console.log(keywords);
+  console.log(
+    'Generating tokenUp.\n Secret:' + secret + '\n Keywords: ' + keywords + ' \n Title: ' + title
+  );
   return new Promise(resolve => {
     superagent
       .post('http://localhost:8081/client-api')
@@ -121,7 +125,7 @@ export function genTokenUp(password, keywords, title, dateCreated, docId) {
         jsonrpc: '2.0',
         method: 'GenTokenUp',
         params: {
-          password: password,
+          password: secret,
           keywords: keywords,
           metadata: {
             title: title,
@@ -156,7 +160,13 @@ export function upload(docId, file, endpoint = 'upload') {
           .end();
       }),
       new Promise(resolve => {
-        genTokenUp('password', ['key'], file.name, 0, docId).then(response => {
+        genTokenUp(
+          'secret',
+          file.name.split('.pdf')[0].split(/\s+/),
+          file.name,
+          file.lastModified,
+          docId
+        ).then(response => {
           var tokenUp = response;
           console.log('TokenUp: ' + tokenUp);
           // TODO: use the tokenUp
