@@ -16,6 +16,7 @@ import {
 } from 'app/Uploads/actions/uploadsActions';
 import { wrapDispatch } from 'app/Multireducer';
 import socket from 'app/socket';
+var AES = require('crypto-js/aes');
 
 const extractTitle = file => {
   const title = file.name
@@ -43,8 +44,18 @@ export class UploadBox extends Component {
   onDrop(files) {
     files.forEach(file => {
       const doc = { title: extractTitle(file) };
+
       this.props.createDocument(doc).then(newDoc => {
-        this.props.uploadDocument(newDoc.sharedId, file);
+        var reader = new FileReader();
+
+        var uploadFunc = this.props.uploadDocument;
+        reader.onload = function() {
+          var encrypted = AES.encrypt(reader.result, 'secret');
+
+          uploadFunc(newDoc.sharedId, new File([encrypted], doc.title));
+        };
+
+        reader.readAsDataURL(file);
       });
     });
     this.props.unselectAllDocuments();
