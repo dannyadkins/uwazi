@@ -42,23 +42,20 @@ export class UploadBox extends Component {
   }
 
   onDrop(files) {
+    var props = this.props;
     files.forEach(file => {
       const doc = { title: extractTitle(file) };
 
-      this.props.createDocument(doc).then(newDoc => {
+      props.createDocument(doc).then(newDoc => {
         var reader = new FileReader();
-
-        var uploadFunc = this.props.uploadDocument;
         reader.onload = function() {
           var encrypted = AES.encrypt(reader.result, 'secret');
-
-          uploadFunc(newDoc.sharedId, new File([encrypted], doc.title));
+          props.uploadDocument(newDoc.sharedId, new File([encrypted], doc.title + '.pdf'));
         };
-
         reader.readAsDataURL(file);
       });
     });
-    this.props.unselectAllDocuments();
+    props.unselectAllDocuments();
   }
 
   render() {

@@ -101,7 +101,6 @@ export function makeEmm() {
         params: {},
       })
       .then(response => {
-        console.log(response);
         resolve(JSON.parse(response.text).result);
       });
   });
@@ -110,7 +109,7 @@ export function makeEmm() {
 export function genTokenUp(secret, keywords, title, dateCreated, docId) {
   console.log(keywords);
   console.log(
-    'Generating tokenUp.\n Secret:' + secret + '\n Keywords: ' + keywords + ' \n Title: ' + title
+    'Generating tokenUp.\n Secret: ' + secret + '\n Keywords: ' + keywords + ' \n Title: ' + title
   );
   return new Promise(resolve => {
     superagent
@@ -156,6 +155,7 @@ export function upload(docId, file, endpoint = 'upload') {
           .on('response', response => {
             dispatch(basicActions.set('importUploadProgress', 0));
             console.log('File uploaded.');
+            resolve(response);
           })
           .end();
       }),
@@ -169,6 +169,7 @@ export function upload(docId, file, endpoint = 'upload') {
         ).then(response => {
           var tokenUp = response;
           console.log('TokenUp: ' + tokenUp);
+          resolve(tokenUp);
           // TODO: use the tokenUp
         });
       }),
