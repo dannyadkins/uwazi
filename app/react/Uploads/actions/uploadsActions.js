@@ -106,12 +106,11 @@ export function makeEmm() {
   });
 }
 
-export function genTokenUp(secret, keywords, title, dateCreated, docId) {
-  console.log(keywords);
-  console.log(
-    'Generating tokenUp.\n Secret: ' + secret + '\n Keywords: ' + keywords + ' \n Title: ' + title
-  );
+export function genTokenUpAndUpdateEMM(secret, keywords, title, dateCreated, docId) {
   return new Promise(resolve => {
+    console.log(
+      'Calling genTokenUp.\n Secret: ' + secret + '\n Keywords: ' + keywords + ' \n Title: ' + title
+    );
     superagent
       .post('http://localhost:8081/client-api')
       .set('Accept', 'application/json')
@@ -134,7 +133,30 @@ export function genTokenUp(secret, keywords, title, dateCreated, docId) {
         },
       })
       .then(response => {
-        resolve(JSON.parse(response.text).result);
+        var tokenUp = JSON.parse(response.text).result;
+        console.log('TokenUp:' + tokenUp);
+
+        console.log('Calling UpdateEmm.');
+        superagent
+          .post('http://localhost:8081/server-api')
+          .set('Accept', 'application/json')
+          .set('Content-Type', 'application/json')
+          .set('X-Requested-With', 'XMLHttpRequest')
+          .set('Access-Control-Allow-Credentials', 'true')
+          .set('Access-Control-Allow-Origin', 'http://localhost:3000')
+          .send({
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'UpdateEmm',
+            params: {
+              pathToEmm: 'EMMs/admin.out',
+              tokenUpBytes: tokenUp,
+            },
+          })
+          .then(res2 => {
+            console.log(JSON.parse(res2.text));
+            resolve(JSON.parse(res2.text));
+          });
       });
   });
 }
@@ -160,16 +182,14 @@ export function upload(docId, file, endpoint = 'upload') {
           .end();
       }),
       new Promise(resolve => {
-        genTokenUp(
+        genTokenUpAndUpdateEMM(
           'secret',
           file.name.split('.pdf')[0].split(/\s+/),
           file.name,
           file.lastModified,
           docId
         ).then(response => {
-          var tokenUp = response;
-          console.log('TokenUp: ' + tokenUp);
-          resolve(tokenUp);
+          resolve(response);
           // TODO: use the tokenUp
         });
       }),
