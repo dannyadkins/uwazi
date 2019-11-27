@@ -7,12 +7,10 @@ import com.googlecode.jsonrpc4j.JsonRpcErrors;
 
 import java.util.HashMap;
 import com.google.common.collect.TreeMultimap;
-import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 @JsonRpcService("/client-api")
 public interface ClientApi {
-
-    HashMap<String, byte[]> MakeEmm();
 
     @JsonRpcErrors({
     @JsonRpcError(exception=Throwable.class,
@@ -22,5 +20,25 @@ public interface ClientApi {
     byte[] GenTokenUp(@JsonRpcParam(value = "password") String password,
                       @JsonRpcParam(value = "keywords") String[] keywords,
                       @JsonRpcParam(value = "metadata") HashMap<String, String> metadata)
+        throws Exception;
+
+
+    @JsonRpcErrors({
+    @JsonRpcError(exception=Throwable.class,
+                  code=-1,
+                  message="GenQueryToken threw an exception.",
+                  data="")})
+    byte[][] GenQueryToken(@JsonRpcParam(value = "password") String password,
+                           @JsonRpcParam(value = "keyword") String keyword)
+        throws Exception;
+
+    
+    @JsonRpcErrors({
+    @JsonRpcError(exception=Throwable.class,
+                  code=-1,
+                  message="GetQueryToken threw an exception.",
+                  data="")})
+    List<String> Resolve(@JsonRpcParam(value = "password") String password,
+                         @JsonRpcParam(value = "queryBytes") byte[][] queryBytes)
         throws Exception;
 }

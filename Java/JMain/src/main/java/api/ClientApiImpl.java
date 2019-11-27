@@ -5,6 +5,8 @@ package uwazi.es.api;
 import com.googlecode.jsonrpc4j.spring.AutoJsonRpcServiceImpl;
 import org.springframework.stereotype.Service;
 
+import uwazi.es.api.ObjSerializer;
+
 // Clusion stuff
 import org.crypto.sse.*;
 
@@ -14,8 +16,8 @@ import java.util.HashMap;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
+import java.util.List;
+import java.util.Arrays;
 
 
 @Service
@@ -25,15 +27,7 @@ public class ClientApiImpl implements ClientApi {
         return RR2Lev.keyGen(256, password, "salt/salt", 100000);
     }
 
-    public HashMap<String, byte[]> MakeEmm() {
-        // Create the initial (empty) emm.
-        HashMap<String, byte[]> emm = DynRH.setup();
-        return emm;
-    }
-
-    public byte[] GenTokenUp(String password,
-               String[] keywords,
-               HashMap<String, String> metadata) throws Exception {
+    public byte[] GenTokenUp(String password, String[] keywords, HashMap<String, String> metadata) throws Exception {
 
         byte[] sk = GetSkFromPassword(password);
 
@@ -48,11 +42,20 @@ public class ClientApiImpl implements ClientApi {
         TreeMultimap<String, byte[]> tokenUp = DynRH.tokenUpdate(sk, multimap);
         
         // Serialize `tokenUp` into byte[] to be passed into RPC.
-        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-        ObjectOutputStream outStream = new ObjectOutputStream(byteOut);
-        outStream.writeObject(tokenUp);
-        outStream.close();
+        return ObjSerializer.ToBytes(tokenUp);
+    }
 
-        return byteOut.toByteArray();
+
+    // TODO: Get this to work with multiple keywords instead of just one?
+    public byte[][] GenQueryToken(String password, String keyword) throws Exception {
+        byte[] sk = GetSkFromPassword(password);
+        return DynRH.genToken(sk, keyword);
+    }
+
+
+    public List<String> Resolve(String password, byte[][] queryBytes) throws Exception {
+        byte[] sk = GetSkFromPassword(password);
+        List<byte[]> queryBytesList = Arrays.asList(queryBytes);
+        return DynRH.resolve(sk, queryBytesList);
     }
 }
