@@ -5,6 +5,8 @@ package uwazi.es.api;
 import com.googlecode.jsonrpc4j.spring.AutoJsonRpcServiceImpl;
 import org.springframework.stereotype.Service;
 
+import uwazi.es.api.ObjSerializer;
+
 // Clusion stuff
 import org.crypto.sse.*;
 
@@ -14,8 +16,6 @@ import java.util.HashMap;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
 
 
 @Service
@@ -23,12 +23,6 @@ import java.io.ObjectOutputStream;
 public class ClientApiImpl implements ClientApi {
     private byte[] GetSkFromPassword(String password) throws Exception {
         return RR2Lev.keyGen(256, password, "salt/salt", 100000);
-    }
-
-    public HashMap<String, byte[]> MakeEmm() {
-        // Create the initial (empty) emm.
-        HashMap<String, byte[]> emm = DynRH.setup();
-        return emm;
     }
 
     public byte[] GenTokenUp(String password,
@@ -48,11 +42,6 @@ public class ClientApiImpl implements ClientApi {
         TreeMultimap<String, byte[]> tokenUp = DynRH.tokenUpdate(sk, multimap);
         
         // Serialize `tokenUp` into byte[] to be passed into RPC.
-        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-        ObjectOutputStream outStream = new ObjectOutputStream(byteOut);
-        outStream.writeObject(tokenUp);
-        outStream.close();
-
-        return byteOut.toByteArray();
+        return ObjSerializer.ToBytes(tokenUp);
     }
 }

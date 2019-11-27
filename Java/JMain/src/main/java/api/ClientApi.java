@@ -12,8 +12,6 @@ import java.io.ByteArrayOutputStream;
 @JsonRpcService("/client-api")
 public interface ClientApi {
 
-    HashMap<String, byte[]> MakeEmm();
-
     @JsonRpcErrors({
     @JsonRpcError(exception=Throwable.class,
                   code=-1,
