@@ -47,11 +47,13 @@ public class ServerApiImpl implements ServerApi {
         ObjSerializer.ToFile(emm, pathToEmm);
     }
 
-    public List<byte[]> Query(String pathToEmm, byte[][] searchToken) throws Exception {
+    public byte[][] Query(String pathToEmm, byte[][] searchToken) throws Exception {
         // Read `emm` from file
         HashMap<String, byte[]> emm = (HashMap<String, byte[]>) ObjSerializer.FromFile(pathToEmm);
         
         List<byte[]> result = DynRH.queryFS(searchToken, emm);
-        return result;
+        int s1 = result.size();
+        // int s2 = result.get(0).size();
+        return result.toArray(new byte[s1][]);
     }
 }

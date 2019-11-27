@@ -37,7 +37,7 @@ public interface ServerApi {
                   code=-1,
                   message="Query threw an exception.",
                   data="")})
-    List<byte[]> Query(@JsonRpcParam(value = "pathToEmm") String pathToEmm,
-                       @JsonRpcParam(value = "searchToken") byte[][] searchToken)
+    byte[][] Query(@JsonRpcParam(value = "pathToEmm") String pathToEmm,
+                   @JsonRpcParam(value = "searchToken") byte[][] searchToken)
         throws Exception;
 }

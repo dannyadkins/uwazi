@@ -17,6 +17,7 @@ import com.google.common.collect.TreeMultimap;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.List;
+import java.util.Arrays;
 
 
 @Service
@@ -26,9 +27,7 @@ public class ClientApiImpl implements ClientApi {
         return RR2Lev.keyGen(256, password, "salt/salt", 100000);
     }
 
-    public byte[] GenTokenUp(String password,
-               String[] keywords,
-               HashMap<String, String> metadata) throws Exception {
+    public byte[] GenTokenUp(String password, String[] keywords, HashMap<String, String> metadata) throws Exception {
 
         byte[] sk = GetSkFromPassword(password);
 
@@ -54,8 +53,9 @@ public class ClientApiImpl implements ClientApi {
     }
 
 
-    public List<String> Resolve(String password, List<byte[]> QueryBytes) throws Exception {
+    public List<String> Resolve(String password, byte[][] queryBytes) throws Exception {
         byte[] sk = GetSkFromPassword(password);
-        return DynRH.resolve(sk, QueryBytes);
+        List<byte[]> queryBytesList = Arrays.asList(queryBytes);
+        return DynRH.resolve(sk, queryBytesList);
     }
 }
