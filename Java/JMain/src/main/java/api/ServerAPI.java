@@ -11,6 +11,20 @@ import java.io.ByteArrayOutputStream;
 
 @JsonRpcService("/server-api")
 public interface ServerApi {
+
+    @JsonRpcErrors({
+    @JsonRpcError(exception=Throwable.class,
+                  code=-1,
+                  message="CreateEmptyEmm threw an exception.",
+                  data="")})
+    void CreateEmptyEmm(@JsonRpcParam(value = "pathToEmm") String pathToEmm) throws Exception;
+
+
+    @JsonRpcErrors({
+    @JsonRpcError(exception=Throwable.class,
+                  code=-1,
+                  message="UpdateEmm threw an exception.",
+                  data="")})
     void UpdateEmm(@JsonRpcParam(value = "pathToEmm") String pathToEmm,
-                   @JsonRpcParam(value = "tokenUp") byte[] tokenUp);
+                   @JsonRpcParam(value = "tokenUpBytes") byte[] tokenUpBytes) throws Exception;
 }
