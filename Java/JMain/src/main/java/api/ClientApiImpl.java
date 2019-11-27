@@ -54,7 +54,7 @@ public class ClientApiImpl implements ClientApi {
     }
 
 
-    public hList<String> Resolve(String password, List<byte[]> QueryBytes) throws Exception {
+    public List<String> Resolve(String password, List<byte[]> QueryBytes) throws Exception {
         byte[] sk = GetSkFromPassword(password);
         return DynRH.resolve(sk, QueryBytes);
     }

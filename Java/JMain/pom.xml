@@ -132,6 +132,25 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
+
+            <!-- UNCOMMENT THIS FOR TESTING MODE -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <archive>
+                    <manifest>
+                        <addClasspath>true</addClasspath>
+                        <classpathPrefix>lib/</classpathPrefix>
+                        <mainClass>uwazi.es.TestApplication</mainClass>
+                    </manifest>
+                    </archive>
+                </configuration>
+
+
+            </plugin>
         </plugins>
     </build>
 
