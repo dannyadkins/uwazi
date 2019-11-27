@@ -16,6 +16,7 @@ import java.util.HashMap;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import java.util.List;
 
 
 @Service
@@ -43,5 +44,18 @@ public class ClientApiImpl implements ClientApi {
         
         // Serialize `tokenUp` into byte[] to be passed into RPC.
         return ObjSerializer.ToBytes(tokenUp);
+    }
+
+
+    // TODO: Get this to work with multiple keywords instead of just one?
+    public byte[][] GenQueryToken(String password, String keyword) throws Exception {
+        byte[] sk = GetSkFromPassword(password);
+        return DynRH.genToken(sk, keyword);
+    }
+
+
+    public hList<String> Resolve(String password, List<byte[]> QueryBytes) throws Exception {
+        byte[] sk = GetSkFromPassword(password);
+        return DynRH.resolve(sk, QueryBytes);
     }
 }

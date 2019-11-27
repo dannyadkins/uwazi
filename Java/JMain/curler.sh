@@ -1,12 +1,3 @@
-curl -H "Content-Type:application/json" -d \
-'{
-    "id": "1",
-    "jsonrpc": "2.0",
-    "method": "MakeEmm",
-    "params": {}
-}' \
- http://localhost:8081/client-api
-
 
 
 curl -H "Content-Type:application/json" -d \
@@ -55,3 +46,41 @@ curl -H "Content-Type:application/json" -d \
         }
 }' \
  http://localhost:8081/server-api
+
+
+
+
+
+
+# Remote EMM now include Salutations doc. Now, let's see if querying works.
+
+curl -H "Content-Type:application/json" -d \
+'{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "method": "GenQueryToken",
+    "params":
+        {
+            "password": "abcd",
+            "keyword": "hello"
+        }
+}' \
+ http://localhost:8081/client-api
+
+ # Response: ["hgzwRmCi9N+/s8fhNPdKhw==","AAAAAg=="]
+
+
+ curl -H "Content-Type:application/json" -d \
+'{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "method": "Query",
+    "params":
+        {
+            "pathToEmm": "EMMs/emm.out",
+            "searchToken": ["hgzwRmCi9N+/s8fhNPdKhw==","AAAAAg=="]
+        }
+}' \
+ http://localhost:8081/server-api
+
+ # Response: []   :(
