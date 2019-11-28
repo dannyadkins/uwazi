@@ -23,7 +23,7 @@ import java.util.Arrays;
 @Service
 @AutoJsonRpcServiceImpl
 public class ClientApiImpl implements ClientApi {
-    private byte[] GetSkFromPassword(String password) throws Exception {
+    public byte[] GetSkFromPassword(String password) throws Exception {
         return RR2Lev.keyGen(256, password, "salt/salt", 100000);
     }
 
