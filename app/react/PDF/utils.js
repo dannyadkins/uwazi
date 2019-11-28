@@ -22,7 +22,17 @@ function decrypt(transitmessage, pass) {
     padding: CryptoJS.pad.Pkcs7,
     mode: CryptoJS.mode.CBC,
   });
-  return decrypted.toString(CryptoJS.enc.Utf8);
+  return decrypted.toString(CryptoJS.enc.Latin1);
+}
+
+function convertDataURIToBinary(raw) {
+  var rawLength = raw.length;
+  var array = new Uint8Array(new ArrayBuffer(rawLength));
+
+  for (var i = 0; i < rawLength; i++) {
+    array[i] = raw.charCodeAt(i);
+  }
+  return array;
 }
 
 const PDFUtils = {
@@ -48,9 +58,10 @@ const PDFUtils = {
         });
       });
     }),
+
   extractEncryptedPDFInfo: pdfFile =>
     new Promise(resolve => {
-      console.log(pdfFile);
+      console.log('Extracting encrypted PDF data');
       superagent
         .get(pdfFile)
         .set('Accept', 'application/pdf')
@@ -58,32 +69,37 @@ const PDFUtils = {
         .on('response', response => {
           console.log('RESPONSE:');
           var encryptedPdf = response.text;
-          console.log(encryptedPdf);
-          var pdfData = atob(
-            decrypt(encryptedPdf, 'secret')
-              .toString(CryptoJS.enc.Utf8)
-              .split('base64,')[1]
-          );
-          console.log(pdfData);
-          PDFJS.getDocument({ data: pdfData }).promise.then(pdf => {
-            const pages = [];
-            for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-              pages.push(pdf.getPage(pageNumber).then(PDFUtils.extractPageInfo));
-            }
+          var decryptedPdf = decrypt(encryptedPdf, 'secret');
+          console.log(decryptedPdf);
+          var pdfAsArray = convertDataURIToBinary(decryptedPdf);
 
-            return Promise.all(pages).then(result => {
-              const count = {};
-              result.forEach((length, index) => {
-                count[index + 1] = {
-                  chars: length,
-                };
-                if (count[index]) {
-                  count[index + 1].chars += count[index].chars;
-                }
-              });
-              resolve(count);
+          PDFJS.getDocument({ data: decryptedPdf })
+            .promise.then(pdf => {
+              const pages = [];
+              for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+                pages.push(pdf.getPage(pageNumber).then(PDFUtils.extractPageInfo));
+              }
+
+              return Promise.all(pages)
+                .then(result => {
+                  const count = {};
+                  result.forEach((length, index) => {
+                    count[index + 1] = {
+                      chars: length,
+                    };
+                    if (count[index]) {
+                      count[index + 1].chars += count[index].chars;
+                    }
+                  });
+                  resolve(count);
+                })
+                .catch(e => {
+                  console.log(e);
+                });
+            })
+            .catch(e => {
+              console.log(e);
             });
-          });
         })
         .end();
     }),

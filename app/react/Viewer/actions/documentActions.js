@@ -78,15 +78,16 @@ export function deleteDocument(doc) {
 export function getDocument(requestParams) {
   return api.get('entities', requestParams).then(response => {
     const doc = response.json.rows[0];
+    console.log(doc);
     if (!isClient) {
       return doc;
     }
     if (doc.pdfInfo || !doc.file) {
       return doc;
     }
+    console.log('Calling');
     return PDFUtils.extractEncryptedPDFInfo(`${APIURL}documents/download?_id=${doc._id}`).then(
       pdfInfo => {
-        console.log(pdfInfo);
         const { _id, sharedId } = doc;
         return api
           .post('documents/pdfInfo', new RequestParams({ _id, sharedId, pdfInfo }))
@@ -97,7 +98,7 @@ export function getDocument(requestParams) {
 }
 
 export function loadTargetDocument(sharedId) {
-  console.log(sharedId);
+  console.log('Loading PDF.');
   return dispatch =>
     Promise.all([
       getDocument(new RequestParams({ sharedId })),

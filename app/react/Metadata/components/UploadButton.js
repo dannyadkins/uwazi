@@ -24,6 +24,15 @@ const renderProcessing = () => (
   </div>
 );
 
+function arrayBufferToWordArray(ab) {
+  var i8a = new Uint8Array(ab);
+  var a = [];
+  for (var i = 0; i < i8a.length; i += 4) {
+    a.push((i8a[i] << 24) | (i8a[i + 1] << 16) | (i8a[i + 2] << 8) | i8a[i + 3]);
+  }
+  return CryptoJS.lib.WordArray.create(a, i8a.length);
+}
+
 function encrypt(msg, pass) {
   var keySize = 256;
   var ivSize = 128;
@@ -80,7 +89,7 @@ export class UploadButton extends Component {
     const file = e.target.files[0];
     var reader = new FileReader();
     reader.onload = function() {
-      var encrypted = encrypt(reader.result, 'secret');
+      var encrypted = encrypt(arrayBufferToWordArray(reader.result), 'secret');
       var encryptedFile = new File([encrypted], encrypt(file.name, 'secret'));
       context.confirm({
         accept: () => {
@@ -97,7 +106,7 @@ export class UploadButton extends Component {
           'All Table of Contents (TOC) and all text-based references linked to the previous document will be lost.',
       });
     };
-    reader.readAsDataURL(file);
+    reader.readAsArrayBuffer(file);
   }
 
   documentProcessed(docId) {
