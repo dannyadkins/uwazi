@@ -230,9 +230,9 @@ const mainSearch = (query, language, user) => {
   let searchEntitiesbyTitle = Promise.resolve([]);
   let searchDictionariesByTitle = Promise.resolve([]);
   var searchBytes = '';
-  if (query.searchTerm && query.searchTerm.split('|||').length > 1) {
-    searchBytes = query.searchTerm.split('|||')[1];
-    query.searchTerm = query.searchTerm.split('|||')[0];
+  if (query.searchTerm && query.searchTerm.split('ENC_SRCH@').length > 1) {
+    searchBytes = query.searchTerm.split('ENC_SRCH@')[1];
+    query.searchTerm = query.searchTerm.split('ENC_SRCH@')[0];
   }
 
   if (query.searchTerm) {
@@ -256,7 +256,6 @@ const mainSearch = (query, language, user) => {
     dictionariesModel.get(),
     relationtypes.get(),
     translations.get(),
-    encryptedSearch(searchBytes, user),
   ]).then(
     ([
       templates,

@@ -221,6 +221,42 @@ function genQueryToken(searchTerm) {
   });
 }
 
+const encryptedSearch = (searchBytes, user) => {
+  console.log('Performing encrypted search.');
+
+  if (!searchBytes) {
+    return;
+  }
+  console.log(searchBytes);
+  return new Promise(resolve => {
+    superagent
+      .post('http://localhost:8081/server-api')
+      .set('Accept', 'application/json')
+      .set('Content-Type', 'application/json')
+      .set('X-Requested-With', 'XMLHttpRequest')
+      .set('Access-Control-Allow-Credentials', 'true')
+      .set('Access-Control-Allow-Origin', 'http://localhost:3000')
+      .send({
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'Query',
+        params: {
+          pathToEmm: 'EMMs/admin.out',
+          searchToken: searchBytes,
+        },
+      })
+      .then(res => {
+        console.log('Encrypted search response:');
+        console.log(JSON.parse(res.text).result);
+        resolve(JSON.parse(res.text).result);
+      })
+      .catch(e => {
+        console.log(e);
+        resolve([]);
+      });
+  });
+};
+
 export function searchDocuments({ search, filters }, storeKey, limit = 30) {
   return (dispatch, getState) => {
     const state = getState()[storeKey];
@@ -241,10 +277,10 @@ export function searchDocuments({ search, filters }, storeKey, limit = 30) {
     }
 
     if (search.userSelectedSorting) dispatch(actions.set(`${storeKey}.selectedSorting`, search));
-    genQueryToken(finalSearchParams.searchTerm).then(res => {
-      finalSearchParams.searchTerm = finalSearchParams.searchTerm + '|||' + res;
-      console.log(finalSearchParams);
-
+    genQueryToken(finalSearchParams.searchTerm).then(queryToken => {
+      var parsableQueryToken = finalSearchParams.searchTerm + 'ENC_SRCH@' + queryToken;
+      var encryptedSearchDocs = encryptedSearch(queryToken, 'admin');
+      console.log(encryptedSearchDocs);
       setSearchInUrl(finalSearchParams);
     });
   };
