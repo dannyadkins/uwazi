@@ -65,7 +65,10 @@ export class DocumentSidePanel extends Component {
   }
 
   setKeywords(e) {
-    this.keywords = e.strip().split(',');
+    if (e.strip()) {
+      e = e.strip();
+    }
+    this.keywords = e.split(',');
   }
 
   updateKeywords() {
