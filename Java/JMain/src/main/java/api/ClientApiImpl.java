@@ -23,6 +23,8 @@ import java.util.Arrays;
 @Service
 @AutoJsonRpcServiceImpl
 public class ClientApiImpl implements ClientApi {
+
+    // Returns a secret key deterministic on `password` (assuming salt has not changed).
     public byte[] GetSkFromPassword(String password) throws Exception {
         return RR2Lev.keyGen(256, password, "salt/salt", 100000);
     }
@@ -30,7 +32,7 @@ public class ClientApiImpl implements ClientApi {
     public byte[] GenTokenUp(String password, String[] keywords, HashMap<String, String> metadata) throws Exception {
 
         byte[] sk = GetSkFromPassword(password);
-
+        
         String docId = metadata.get("docId");
         
         // TODO: Make multimap of {keyword: metadata} instead of {keyword: docId}
@@ -40,7 +42,7 @@ public class ClientApiImpl implements ClientApi {
         }
 
         TreeMultimap<String, byte[]> tokenUp = DynRH.tokenUpdate(sk, multimap);
-        
+
         // Serialize `tokenUp` into byte[] to be passed into RPC.
         return ObjSerializer.ToBytes(tokenUp);
     }
@@ -53,9 +55,8 @@ public class ClientApiImpl implements ClientApi {
     }
 
 
-    public List<String> Resolve(String password, byte[][] queryBytes) throws Exception {
+    public List<String> Resolve(String password, List<byte[]> queryBytes) throws Exception {
         byte[] sk = GetSkFromPassword(password);
-        List<byte[]> queryBytesList = Arrays.asList(queryBytes);
-        return DynRH.resolve(sk, queryBytesList);
+        return DynRH.resolve(sk, queryBytes);
     }
 }
