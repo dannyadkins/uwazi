@@ -108,10 +108,11 @@ export function makeEmm() {
   });
 }
 
-export function genTokenUpAndUpdateEMM(secret, keywords, docId) {
+export function genTokenUpAndUpdateEMM(secret, keywords, title) {
+  console.log(title);
   return new Promise(resolve => {
     console.log(
-      'Calling genTokenUp.\n Secret: ' + secret + '\n Keywords: ' + keywords + ' \n DocID: ' + docId
+      'Calling genTokenUp.\n Secret: ' + secret + '\n Keywords: ' + keywords + ' \n Title: ' + title
     );
     superagent
       .post('http://localhost:8081/client-api')
@@ -128,7 +129,7 @@ export function genTokenUpAndUpdateEMM(secret, keywords, docId) {
           password: secret,
           keywords: keywords,
           metadata: {
-            docId: docId,
+            docId: title,
           },
         },
       })

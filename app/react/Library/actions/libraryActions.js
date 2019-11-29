@@ -230,7 +230,6 @@ export function encryptedSearch(searchBytes, user) {
   if (searchBytes.split) {
     searchBytes = searchBytes.split(',');
   }
-  console.log(searchBytes);
   return new Promise(resolve => {
     superagent
       .post('http://localhost:8081/server-api')
@@ -262,7 +261,6 @@ export function encryptedSearch(searchBytes, user) {
 
 export function resolveEncryptedSearch(queryResponse) {
   console.log('Resolving the query response on the client side.');
-  console.log(queryResponse);
   return new Promise(resolve => {
     superagent
       .post('http://localhost:8081/client-api')

@@ -190,11 +190,13 @@ const processResponse = response => {
 
 const mainSearch = (query, language, user) => {
   let searchEntitiesbyTitle = Promise.resolve([]);
+  let searchEncryptedEntitiesByTitle = Promise.resolve([]);
+
   let searchDictionariesByTitle = Promise.resolve([]);
   var esDocTitles = '';
   if (query.searchTerm && query.searchTerm.split('ENC_SRCH@').length > 1) {
-    esDocTitles = query.searchTerm.split('ENC_SRCH@')[1];
-    query.searchTerm = query.searchTerm.split('ENC_SRCH@')[0];
+    esDocTitles = query.searchTerm.split('ENC_SRCH@')[1].split(',');
+    query.searchTerm = esDocTitles[1];
   }
   // if (query.ids) {
   //   query.ids.append(esDocIDs);
@@ -207,6 +209,13 @@ const mainSearch = (query, language, user) => {
       'sharedId',
       { limit: 5 }
     );
+    searchEncryptedEntitiesByTitle = entities.get(
+      { $text: { $search: esDocTitles[0] }, language },
+      'sharedId',
+      {
+        limit: 5,
+      }
+    );
     const regexp = `.*${query.searchTerm}.*`;
     searchDictionariesByTitle = dictionariesModel.db.aggregate([
       { $match: { 'values.label': { $regex: regexp, $options: 'i' } } },
@@ -218,6 +227,8 @@ const mainSearch = (query, language, user) => {
   return Promise.all([
     templatesModel.get(),
     searchEntitiesbyTitle,
+    searchEncryptedEntitiesByTitle,
+
     searchDictionariesByTitle,
     dictionariesModel.get(),
     relationtypes.get(),
@@ -226,11 +237,16 @@ const mainSearch = (query, language, user) => {
     ([
       templates,
       entitiesMatchedByTitle,
+      encryptedEntitiesMatchedByTitle,
       dictionariesMatchByLabel,
       dictionaries,
       relationTypes,
       _translations,
     ]) => {
+      // console.log('Results:');
+      entitiesMatchedByTitle = entitiesMatchedByTitle.concat(encryptedEntitiesMatchedByTitle);
+      // console.log(templates);
+      // console.log(entitiesMatchedByTitle);
       const textFieldsToSearch =
         query.fields ||
         propertiesHelper
