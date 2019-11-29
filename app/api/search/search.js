@@ -194,9 +194,10 @@ const mainSearch = (query, language, user) => {
 
   let searchDictionariesByTitle = Promise.resolve([]);
   var esDocTitles = '';
-  if (query.searchTerm && query.searchTerm.split('ENC_SRCH@').length > 1) {
-    esDocTitles = query.searchTerm.split('ENC_SRCH@')[1].split(',');
-    query.searchTerm = esDocTitles[1];
+  if (query.sort && query.sort.split('ENC_SRCH@').length > 1) {
+    esDocTitles = query.sort.split('ENC_SRCH@')[1].split(',');
+    query.searchTerm = esDocTitles[0];
+    query.sort = query.sort.split('ENC_SRCH@')[0];
   }
   // if (query.ids) {
   //   query.ids.append(esDocIDs);
@@ -205,12 +206,12 @@ const mainSearch = (query, language, user) => {
   // }
   if (query.searchTerm) {
     searchEntitiesbyTitle = entities.get(
-      { $text: { $search: query.searchTerm }, language },
+      { $text: { $search: query.searchTerm || '' }, language },
       'sharedId',
       { limit: 5 }
     );
     searchEncryptedEntitiesByTitle = entities.get(
-      { $text: { $search: esDocTitles[0] }, language },
+      { $text: { $search: esDocTitles[0] || '' }, language },
       'sharedId',
       {
         limit: 5,

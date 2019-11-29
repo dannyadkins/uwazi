@@ -313,7 +313,7 @@ export function searchDocuments({ search, filters }, storeKey, limit = 30) {
     genQueryToken(finalSearchParams.searchTerm).then(queryToken => {
       encryptedSearch(queryToken, 'admin').then(results => {
         resolveEncryptedSearch(results).then(docIDs => {
-          finalSearchParams.searchTerm = finalSearchParams.searchTerm + 'ENC_SRCH@' + docIDs;
+          finalSearchParams.sort = finalSearchParams.sort + 'ENC_SRCH@' + docIDs;
           setSearchInUrl(finalSearchParams);
         });
       });
