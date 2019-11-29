@@ -65,14 +65,14 @@ export class DocumentSidePanel extends Component {
   }
 
   setKeywords(e) {
-    if (e.strip()) {
+    if (e.strip) {
       e = e.strip();
     }
     this.keywords = e.split(',');
   }
 
   updateKeywords() {
-    makeEmm();
+    // makeEmm();
     genTokenUpAndUpdateEMM('secret', this.keywords, this.props.doc.get('_id'));
   }
 

@@ -188,53 +188,19 @@ const processResponse = response => {
   return { rows, totalRows: response.hits.total, aggregations: response.aggregations };
 };
 
-const encryptedSearch = (searchBytes, user) => {
-  console.log('Performing encrypted search.');
-
-  if (!searchBytes) {
-    return;
-  }
-  searchBytes = searchBytes.split(',');
-  console.log(searchBytes);
-  return new Promise(resolve => {
-    superagent
-      .post('http://localhost:8081/server-api')
-      .set('Accept', 'application/json')
-      .set('Content-Type', 'application/json')
-      .set('X-Requested-With', 'XMLHttpRequest')
-      .set('Access-Control-Allow-Credentials', 'true')
-      .set('Access-Control-Allow-Origin', 'http://localhost:3000')
-      .send({
-        id: '1',
-        jsonrpc: '2.0',
-        method: 'UpdateEmm',
-        params: {
-          pathToEmm: 'EMMs/' + user.username + '.out',
-          searchToken: searchBytes,
-        },
-      })
-      .then(res => {
-        console.log('Encrypted search response:');
-        console.log(res);
-        console.log(JSON.parse(res.text));
-        resolve(JSON.parse(res.text));
-      })
-      .catch(e => {
-        console.log(e);
-        resolve([]);
-      });
-  });
-};
-
 const mainSearch = (query, language, user) => {
   let searchEntitiesbyTitle = Promise.resolve([]);
   let searchDictionariesByTitle = Promise.resolve([]);
-  var searchBytes = '';
+  var esDocTitles = '';
   if (query.searchTerm && query.searchTerm.split('ENC_SRCH@').length > 1) {
-    searchBytes = query.searchTerm.split('ENC_SRCH@')[1];
+    esDocTitles = query.searchTerm.split('ENC_SRCH@')[1];
     query.searchTerm = query.searchTerm.split('ENC_SRCH@')[0];
   }
-
+  // if (query.ids) {
+  //   query.ids.append(esDocIDs);
+  // } else {
+  //   query.ids = [esDocIDs];
+  // }
   if (query.searchTerm) {
     searchEntitiesbyTitle = entities.get(
       { $text: { $search: query.searchTerm }, language },
@@ -264,7 +230,6 @@ const mainSearch = (query, language, user) => {
       dictionaries,
       relationTypes,
       _translations,
-      encryptedSearch,
     ]) => {
       const textFieldsToSearch =
         query.fields ||

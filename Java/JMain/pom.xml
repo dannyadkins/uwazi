@@ -40,25 +40,25 @@
             <version>3.8.1</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
             <version>1.54</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
             <version>6.1.0</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>1.8.10</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.mapdb</groupId>
             <artifactId>mapdb</artifactId>
@@ -70,31 +70,31 @@
             <artifactId>guava</artifactId>
             <version>19.0</version>
         </dependency>
-        
+
         <dependency>
             <groupId>com.carrotsearch</groupId>
             <artifactId>java-sizeof</artifactId>
             <version>0.0.5</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
             <version>2.7.1</version>
         </dependency>
-        
+
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
             <version>1.11.19</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
             <version>1.2.1</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
@@ -135,7 +135,7 @@
 
 
             <!-- UNCOMMENT THIS FOR TESTING MODE -->
-            <plugin>
+            <!-- <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.1.0</version>
@@ -148,7 +148,7 @@
                     </manifest>
                     </archive>
                 </configuration>
-            </plugin>
+            </plugin> -->
         </plugins>
     </build>
 

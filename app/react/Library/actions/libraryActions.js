@@ -221,11 +221,14 @@ function genQueryToken(searchTerm) {
   });
 }
 
-const encryptedSearch = (searchBytes, user) => {
+export function encryptedSearch(searchBytes, user) {
   console.log('Performing encrypted search.');
 
   if (!searchBytes) {
     return;
+  }
+  if (searchBytes.split) {
+    searchBytes = searchBytes.split(',');
   }
   console.log(searchBytes);
   return new Promise(resolve => {
@@ -255,7 +258,39 @@ const encryptedSearch = (searchBytes, user) => {
         resolve([]);
       });
   });
-};
+}
+
+export function resolveEncryptedSearch(queryResponse) {
+  console.log('Resolving the query response on the client side.');
+  console.log(queryResponse);
+  return new Promise(resolve => {
+    superagent
+      .post('http://localhost:8081/client-api')
+      .set('Accept', 'application/json')
+      .set('Content-Type', 'application/json')
+      .set('X-Requested-With', 'XMLHttpRequest')
+      .set('Access-Control-Allow-Credentials', 'true')
+      .set('Access-Control-Allow-Origin', 'http://localhost:3000')
+      .send({
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'Resolve',
+        params: {
+          password: 'secret',
+          queryBytes: queryResponse,
+        },
+      })
+      .then(res => {
+        console.log('Resolved results:');
+        console.log(JSON.parse(res.text).result);
+        resolve(JSON.parse(res.text).result);
+      })
+      .catch(e => {
+        console.log(e);
+        resolve([]);
+      });
+  });
+}
 
 export function searchDocuments({ search, filters }, storeKey, limit = 30) {
   return (dispatch, getState) => {
@@ -278,10 +313,12 @@ export function searchDocuments({ search, filters }, storeKey, limit = 30) {
 
     if (search.userSelectedSorting) dispatch(actions.set(`${storeKey}.selectedSorting`, search));
     genQueryToken(finalSearchParams.searchTerm).then(queryToken => {
-      var parsableQueryToken = finalSearchParams.searchTerm + 'ENC_SRCH@' + queryToken;
-      var encryptedSearchDocs = encryptedSearch(queryToken, 'admin');
-      console.log(encryptedSearchDocs);
-      setSearchInUrl(finalSearchParams);
+      encryptedSearch(queryToken, 'admin').then(results => {
+        resolveEncryptedSearch(results).then(docIDs => {
+          finalSearchParams.searchTerm = finalSearchParams.searchTerm + 'ENC_SRCH@' + docIDs;
+          setSearchInUrl(finalSearchParams);
+        });
+      });
     });
   };
 }
