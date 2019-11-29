@@ -18,6 +18,8 @@ import SidePanel from 'app/Layout/SidePanel';
 import DocumentSemanticSearchResults from 'app/SemanticSearch/components/DocumentResults';
 import { Icon } from 'UI';
 
+import { genTokenUpAndUpdateEMM, makeEmm } from '../../Uploads/actions/uploadsActions';
+
 import * as viewerModule from 'app/Viewer';
 import SearchText from './SearchText';
 import ShowToc from './ShowToc';
@@ -63,13 +65,12 @@ export class DocumentSidePanel extends Component {
   }
 
   setKeywords(e) {
-    this.keywords = e.split(',');
+    this.keywords = e.strip().split(',');
   }
 
   updateKeywords() {
-    this.keywords.forEach(function(keyword) {
-      // TODO: gentokenup
-    });
+    makeEmm();
+    genTokenUpAndUpdateEMM('secret', this.keywords, this.props.doc.get('_id'));
   }
 
   close() {

@@ -88,7 +88,7 @@ export function importData([file], template) {
 export function makeEmm() {
   new Promise(resolve => {
     superagent
-      .post('http://localhost:8081/client-api')
+      .post('http://localhost:8081/server-api')
       .set('Accept', 'application/json')
       .set('Content-Type', 'application/json')
       .set('X-Requested-With', 'XMLHttpRequest')
@@ -97,8 +97,10 @@ export function makeEmm() {
       .send({
         id: '1',
         jsonrpc: '2.0',
-        method: 'MakeEmm',
-        params: {},
+        method: 'CreateEmptyEmm',
+        params: {
+          pathToEmm: 'EMMs/admin.out',
+        },
       })
       .then(response => {
         resolve(JSON.parse(response.text).result);
@@ -106,10 +108,10 @@ export function makeEmm() {
   });
 }
 
-export function genTokenUpAndUpdateEMM(secret, keywords, title, dateCreated, docId) {
+export function genTokenUpAndUpdateEMM(secret, keywords, docId) {
   return new Promise(resolve => {
     console.log(
-      'Calling genTokenUp.\n Secret: ' + secret + '\n Keywords: ' + keywords + ' \n Title: ' + title
+      'Calling genTokenUp.\n Secret: ' + secret + '\n Keywords: ' + keywords + ' \n DocID: ' + docId
     );
     superagent
       .post('http://localhost:8081/client-api')
@@ -126,8 +128,6 @@ export function genTokenUpAndUpdateEMM(secret, keywords, title, dateCreated, doc
           password: secret,
           keywords: keywords,
           metadata: {
-            title: title,
-            dateCreated: dateCreated,
             docId: docId,
           },
         },
@@ -185,8 +185,8 @@ export function upload(docId, file, endpoint = 'upload') {
         genTokenUpAndUpdateEMM(
           'secret',
           file.name.split('.pdf')[0].split(/\s+/),
-          file.name,
-          file.lastModified,
+          // file.name,
+          // file.lastModified,
           docId
         ).then(response => {
           resolve(response);
