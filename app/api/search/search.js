@@ -193,11 +193,15 @@ const mainSearch = (query, language, user) => {
   let searchEncryptedEntitiesByTitle = Promise.resolve([]);
 
   let searchDictionariesByTitle = Promise.resolve([]);
-  var esDocTitles = '';
-  if (query.sort && query.sort.split('ENC_SRCH@').length > 1) {
-    esDocTitles = query.sort.split('ENC_SRCH@')[1].split(',');
-    query.searchTerm = esDocTitles[0];
-    query.sort = query.sort.split('ENC_SRCH@')[0];
+
+  if (query.searchTerm) {
+    var esDocTitles = '';
+    if (query.sort && query.sort.split('ENC_SRCH@').length > 1) {
+      esDocTitles = query.sort.split('ENC_SRCH@')[1].split(',');
+
+      query.searchTerm = esDocTitles[0] || 'NO RESULTS FOUND DO NOT SEARCH';
+      query.sort = query.sort.split('ENC_SRCH@')[0];
+    }
   }
   // if (query.ids) {
   //   query.ids.append(esDocIDs);
