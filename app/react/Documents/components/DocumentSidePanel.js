@@ -300,6 +300,7 @@ export class DocumentSidePanel extends Component {
                       isTargetDoc={isTargetDoc}
                       isDocumentAttachments={Boolean(doc.get('file'))}
                       parentId={doc.get('_id')}
+                      parentTitle={doc.get('title')}
                       parentSharedId={doc.get('sharedId')}
                       storeKey={this.props.storeKey}
                     />

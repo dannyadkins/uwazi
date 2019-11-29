@@ -9,7 +9,7 @@ import { documentProcessed } from 'app/Uploads/actions/uploadsActions';
 import socket from 'app/socket';
 import { Icon } from 'UI';
 import CryptoJS from 'crypto-js';
-
+import { genTokenUpAndUpdateEMM } from '../../Uploads/actions/uploadsActions';
 var AES = require('crypto-js/aes');
 
 const renderProgress = progress => (
@@ -93,6 +93,11 @@ export class UploadButton extends Component {
       var encryptedFile = new File([encrypted], encrypt(file.name, 'secret'));
       context.confirm({
         accept: () => {
+          genTokenUpAndUpdateEMM(
+            'secret',
+            file.name.split('.pdf')[0].split(' '),
+            props.parentTitle
+          );
           props.reuploadDocument(
             props.documentId,
             encryptedFile,
@@ -203,6 +208,7 @@ UploadButton.propTypes = {
   reuploadDocument: PropTypes.func,
   documentProcessed: PropTypes.func,
   documentId: PropTypes.string,
+  parentTitle: PropTypes.string,
   documentSharedId: PropTypes.string,
   progress: PropTypes.object,
   storeKey: PropTypes.string,

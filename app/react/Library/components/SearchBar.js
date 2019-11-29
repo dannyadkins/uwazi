@@ -42,10 +42,6 @@ export class SearchBar extends Component {
     this.props.searchDocuments({ search }, this.props.storeKey);
   }
 
-  onChange(e) {
-    console.log(e.target.value);
-  }
-
   render() {
     const { search, semanticSearchEnabled, storeKey } = this.props;
     const model = `${storeKey}.search`;
@@ -59,7 +55,6 @@ export class SearchBar extends Component {
                 placeholder={t('System', 'Search', null, false)}
                 className="form-control"
                 autoComplete="off"
-                onChange={this.onChange}
               />
               <Icon icon="times" onClick={this.resetSearch} />
             </Field>

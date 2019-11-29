@@ -100,7 +100,15 @@ export class Attachment extends Component {
   }
 
   render() {
-    const { file, parentId, parentSharedId, model, isSourceDocument, storeKey } = this.props;
+    const {
+      file,
+      parentId,
+      parentSharedId,
+      parentTitle,
+      model,
+      isSourceDocument,
+      storeKey,
+    } = this.props;
     const sizeString = file.size ? filesize(file.size) : '';
     const item = getItemOptions(isSourceDocument, parentId, file.filename);
 
@@ -139,6 +147,7 @@ export class Attachment extends Component {
             <ShowIf if={item.replaceable && !this.props.readOnly}>
               <UploadButton
                 documentId={parentId}
+                parentTitle={parentTitle}
                 documentSharedId={parentSharedId}
                 storeKey={storeKey}
               />
@@ -203,6 +212,8 @@ Attachment.propTypes = {
   deleteMessage: PropTypes.string,
   file: PropTypes.object,
   parentId: PropTypes.string,
+  parentTitle: PropTypes.string,
+
   storeKey: PropTypes.string,
   model: PropTypes.string,
   parentSharedId: PropTypes.string,
