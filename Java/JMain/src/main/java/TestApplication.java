@@ -3,10 +3,16 @@ package uwazi.es;
 
 import uwazi.es.api.ClientApiImpl;
 import uwazi.es.api.ServerApiImpl;
+import uwazi.es.api.ObjSerializer;
+
+import org.crypto.sse.*;
 
 import java.io.*;
 import java.util.List;
 import java.util.HashMap;
+import com.google.common.collect.TreeMultimap;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
 public class TestApplication {
     public static void main(String[] args) throws Exception {
@@ -17,23 +23,17 @@ public class TestApplication {
         String pathToEmm = "EMMs/emm.out";
 
 
-
         System.out.println("Creating new EMM on server.");
         server.CreateEmptyEmm(pathToEmm);
 
-
-
-
-        byte[][] queryToken = client.GenQueryToken(password, "hello");
-        System.out.printf("\nQuery token for \"hello\": ");
-        System.out.println(queryToken);
-
+        byte[][] queryToken1 = client.GenQueryToken(password, "hello");
+        System.out.printf("\nFIRST query token for \"hello\": ");
+        System.out.println(queryToken1);
 
 
 
         // Check that a query on an empty emm reports no documents.
-
-        byte[][] queryResp1 = server.Query(pathToEmm, queryToken);
+        List<byte[]> queryResp1 = server.Query(pathToEmm, queryToken1);
         System.out.print("\nServer response for query: ");
         System.out.println(queryResp1);
 
@@ -43,10 +43,8 @@ public class TestApplication {
 
 
 
-
         // Upload a new file, "first-document" with keywords {hello, goodbye}.
-
-        String[] keywords = {"hello", "goodbye"};
+        String[] keywords = { "hello", "goodbye" };
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put("docId", "first-document");
 
@@ -57,17 +55,16 @@ public class TestApplication {
         server.UpdateEmm(pathToEmm, encToken);
         System.out.println("Updated EMM with that token.");
 
-
-
-
-
         // Check that the document is found with our "hello" query.
 
+        byte[][] queryToken2 = client.GenQueryToken(password, "hello");
+        System.out.printf("\nSECOND query token for \"hello\": ");
+        System.out.println(queryToken2);
+
         System.out.println("\nResending Query to server (but now it has the file).");
-        byte[][] queryResp2 = server.Query(pathToEmm, queryToken);
+        List<byte[]> queryResp2 = server.Query(pathToEmm, queryToken2);
         System.out.print("Server response for query: ");
         System.out.println(queryResp2);
-
 
         System.out.print("Client's decryption of query response: ");
         System.out.println(client.Resolve(password, queryResp2));

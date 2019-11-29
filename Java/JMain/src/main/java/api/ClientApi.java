@@ -39,6 +39,6 @@ public interface ClientApi {
                   message="GetQueryToken threw an exception.",
                   data="")})
     List<String> Resolve(@JsonRpcParam(value = "password") String password,
-                         @JsonRpcParam(value = "queryBytes") byte[][] queryBytes)
+                         @JsonRpcParam(value = "queryBytes") List<byte[]> queryBytes)
         throws Exception;
 }
