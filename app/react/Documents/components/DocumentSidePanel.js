@@ -68,6 +68,10 @@ export class DocumentSidePanel extends Component {
     if (e.strip) {
       e = e.strip();
     }
+
+    if (e.trim) {
+      e = e.trim();
+    }
     this.keywords = e.split(',');
   }
 
