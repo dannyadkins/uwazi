@@ -206,6 +206,10 @@ const mainSearch = (query, language, user) => {
       if (query.searchTerm) {
         titleToSearch = title;
       }
+
+      if (title.trim().length === 0) {
+        titleToSearch = '$DO NOT SEARCH$';
+      }
       let searchEntitiesbyTitle = Promise.resolve([]);
 
       let searchDictionariesByTitle = Promise.resolve([]);
