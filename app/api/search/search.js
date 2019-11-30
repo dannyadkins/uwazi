@@ -189,149 +189,156 @@ const processResponse = response => {
 };
 
 const mainSearch = (query, language, user) => {
-  let searchEntitiesbyTitle = Promise.resolve([]);
-  let searchEncryptedEntitiesByTitle = Promise.resolve([]);
-
-  let searchDictionariesByTitle = Promise.resolve([]);
+  var promises = [];
+  var esDocTitles = ['NO RESULTS FOUND DO NOT SEARCH'];
 
   if (query.searchTerm) {
-    var esDocTitles = '';
     if (query.sort && query.sort.split('ENC_SRCH@').length > 1) {
       esDocTitles = query.sort.split('ENC_SRCH@')[1].split(',');
 
-      query.searchTerm = esDocTitles[0] || 'NO RESULTS FOUND DO NOT SEARCH';
       query.sort = query.sort.split('ENC_SRCH@')[0];
     }
   }
-  // if (query.ids) {
-  //   query.ids.append(esDocIDs);
-  // } else {
-  //   query.ids = [esDocIDs];
-  // }
-  if (query.searchTerm) {
-    searchEntitiesbyTitle = entities.get(
-      { $text: { $search: query.searchTerm || '' }, language },
-      'sharedId',
-      { limit: 5 }
-    );
-    searchEncryptedEntitiesByTitle = entities.get(
-      { $text: { $search: esDocTitles[0] || '' }, language },
-      'sharedId',
-      {
-        limit: 5,
+
+  var promises = esDocTitles.map(title => {
+    return new Promise(resolve => {
+      let titleToSearch = '';
+      if (query.searchTerm) {
+        titleToSearch = title;
       }
-    );
-    const regexp = `.*${query.searchTerm}.*`;
-    searchDictionariesByTitle = dictionariesModel.db.aggregate([
-      { $match: { 'values.label': { $regex: regexp, $options: 'i' } } },
-      { $unwind: '$values' },
-      { $match: { 'values.label': { $regex: regexp, $options: 'i' } } },
-    ]);
-  }
+      let searchEntitiesbyTitle = Promise.resolve([]);
 
-  return Promise.all([
-    templatesModel.get(),
-    searchEntitiesbyTitle,
-    searchEncryptedEntitiesByTitle,
+      let searchDictionariesByTitle = Promise.resolve([]);
 
-    searchDictionariesByTitle,
-    dictionariesModel.get(),
-    relationtypes.get(),
-    translations.get(),
-  ]).then(
-    ([
-      templates,
-      entitiesMatchedByTitle,
-      encryptedEntitiesMatchedByTitle,
-      dictionariesMatchByLabel,
-      dictionaries,
-      relationTypes,
-      _translations,
-    ]) => {
-      // console.log('Results:');
-      entitiesMatchedByTitle = entitiesMatchedByTitle.concat(encryptedEntitiesMatchedByTitle);
-      // console.log(templates);
-      // console.log(entitiesMatchedByTitle);
-      const textFieldsToSearch =
-        query.fields ||
-        propertiesHelper
-          .textFields(templates)
-          .map(prop => `metadata.${prop.name}`)
-          .concat(['title', 'fullText']);
-      const documentsQuery = documentQueryBuilder()
-        .fullTextSearch(query.searchTerm, textFieldsToSearch, 2)
-        .filterByTemplate(query.types)
-        .filterById(query.ids)
-        .language(language);
+      if (titleToSearch) {
+        searchEntitiesbyTitle = entities.get(
+          { $text: { $search: titleToSearch || '' }, language },
+          'sharedId',
+          { limit: 5 }
+        );
 
-      if (query.from) {
-        documentsQuery.from(query.from);
+        const regexp = `.*${titleToSearch}.*`;
+        searchDictionariesByTitle = dictionariesModel.db.aggregate([
+          { $match: { 'values.label': { $regex: regexp, $options: 'i' } } },
+          { $unwind: '$values' },
+          { $match: { 'values.label': { $regex: regexp, $options: 'i' } } },
+        ]);
       }
 
-      if (query.limit) {
-        documentsQuery.limit(query.limit);
-      }
+      Promise.all([
+        templatesModel.get(),
+        searchEntitiesbyTitle,
 
-      if (query.includeUnpublished && user) {
-        documentsQuery.includeUnpublished();
-      }
+        searchDictionariesByTitle,
+        dictionariesModel.get(),
+        relationtypes.get(),
+        translations.get(),
+      ]).then(
+        ([
+          templates,
+          entitiesMatchedByTitle,
+          dictionariesMatchByLabel,
+          dictionaries,
+          relationTypes,
+          _translations,
+        ]) => {
+          const textFieldsToSearch =
+            query.fields ||
+            propertiesHelper
+              .textFields(templates)
+              .map(prop => `metadata.${prop.name}`)
+              .concat(['title', 'fullText']);
+          const documentsQuery = documentQueryBuilder()
+            .fullTextSearch(titleToSearch, textFieldsToSearch, 2)
+            .filterByTemplate(query.types)
+            .filterById(query.ids)
+            .language(language);
 
-      if (query.unpublished && user) {
-        documentsQuery.unpublished();
-      }
+          if (query.from) {
+            documentsQuery.from(query.from);
+          }
 
-      const allTemplates = templates.map(t => t._id);
-      const allUniqueProps = propertiesHelper.allUniqueProperties(templates);
-      const filteringTypes = query.types && query.types.length ? query.types : allTemplates;
-      let properties = propertiesHelper.comonFilters(templates, relationTypes, filteringTypes);
-      properties =
-        !query.types || !query.types.length
-          ? propertiesHelper.defaultFilters(templates)
-          : properties;
+          if (query.limit) {
+            documentsQuery.limit(query.limit);
+          }
 
-      if (query.sort) {
-        const sortingProp = allUniqueProps.find(p => `metadata.${p.name}` === query.sort);
-        if (sortingProp && sortingProp.type === 'select') {
-          const dictionary = dictionaries.find(d => d._id.toString() === sortingProp.content);
-          const translation = getLocaleTranslation(_translations, language);
-          const context = getContext(translation, dictionary._id.toString());
-          const keys = dictionary.values.reduce((result, value) => {
-            result[value.id] = translate(context, value.label, value.label);
-            return result;
-          }, {});
-          documentsQuery.sortByForeignKey(query.sort, keys, query.order);
-        } else {
-          documentsQuery.sort(query.sort, query.order);
+          if (query.includeUnpublished && user) {
+            documentsQuery.includeUnpublished();
+          }
+
+          if (query.unpublished && user) {
+            documentsQuery.unpublished();
+          }
+
+          const allTemplates = templates.map(t => t._id);
+          const allUniqueProps = propertiesHelper.allUniqueProperties(templates);
+          const filteringTypes = query.types && query.types.length ? query.types : allTemplates;
+          let properties = propertiesHelper.comonFilters(templates, relationTypes, filteringTypes);
+          properties =
+            !query.types || !query.types.length
+              ? propertiesHelper.defaultFilters(templates)
+              : properties;
+
+          if (query.sort) {
+            const sortingProp = allUniqueProps.find(p => `metadata.${p.name}` === query.sort);
+            if (sortingProp && sortingProp.type === 'select') {
+              const dictionary = dictionaries.find(d => d._id.toString() === sortingProp.content);
+              const translation = getLocaleTranslation(_translations, language);
+              const context = getContext(translation, dictionary._id.toString());
+              const keys = dictionary.values.reduce((result, value) => {
+                result[value.id] = translate(context, value.label, value.label);
+                return result;
+              }, {});
+              documentsQuery.sortByForeignKey(query.sort, keys, query.order);
+            } else {
+              documentsQuery.sort(query.sort, query.order);
+            }
+          }
+
+          if (query.allAggregations) {
+            properties = allUniqueProps;
+          }
+
+          const aggregations = agregationProperties(properties);
+          const filters = processFiltes(query.filters, properties);
+          const textSearchFilters = filtersBasedOnSearchTerm(
+            allUniqueProps,
+            entitiesMatchedByTitle,
+            dictionariesMatchByLabel
+          );
+
+          documentsQuery.filterMetadataByFullText(textSearchFilters);
+          documentsQuery.filterMetadata(filters);
+          documentsQuery.aggregations(aggregations, dictionaries);
+
+          if (query.geolocation) {
+            searchGeolocation(documentsQuery, filteringTypes, templates);
+          }
+          elastic
+            .search({ index: elasticIndexes.index, body: documentsQuery.query() })
+            .then(response => {
+              resolve(response);
+            })
+            .catch(e => {
+              throw createError(e.message, 400);
+            });
         }
-      }
-
-      if (query.allAggregations) {
-        properties = allUniqueProps;
-      }
-
-      const aggregations = agregationProperties(properties);
-      const filters = processFiltes(query.filters, properties);
-      const textSearchFilters = filtersBasedOnSearchTerm(
-        allUniqueProps,
-        entitiesMatchedByTitle,
-        dictionariesMatchByLabel
       );
+    });
+  });
 
-      documentsQuery.filterMetadataByFullText(textSearchFilters);
-      documentsQuery.filterMetadata(filters);
-      documentsQuery.aggregations(aggregations, dictionaries);
+  return Promise.all(promises).then(results => {
+    var parsedResult = JSON.parse(JSON.stringify(results[0]));
+    parsedResult.hits.hits = [];
+    parsedResult.hits.total = 0;
 
-      if (query.geolocation) {
-        searchGeolocation(documentsQuery, filteringTypes, templates);
-      }
-      return elastic
-        .search({ index: elasticIndexes.index, body: documentsQuery.query() })
-        .then(processResponse)
-        .catch(e => {
-          throw createError(e.message, 400);
-        });
-    }
-  );
+    results.forEach(result => {
+      parsedResult.hits.hits = parsedResult.hits.hits.concat(result.hits.hits);
+      parsedResult.hits.total = parsedResult.hits.total + result.hits.total;
+    });
+
+    return processResponse(parsedResult);
+  });
 };
 
 const determineInheritedProperties = templates =>
