@@ -14,8 +14,10 @@ import com.google.common.collect.TreeMultimap;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
+
 public class TestApplication {
     public static void main(String[] args) throws Exception {
+        /*
         ClientApiImpl client = new ClientApiImpl();
         ServerApiImpl server = new ServerApiImpl();
 
@@ -69,5 +71,6 @@ public class TestApplication {
         System.out.print("Client's decryption of query response: ");
         System.out.println(client.Resolve(password, queryResp2));
         System.out.println("## We expect ['first-document'] response ##");
+        */
     }
 }

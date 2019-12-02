@@ -18,9 +18,11 @@ public interface ClientApi {
                   message="GetTokenUp threw an exception.",
                   data="")})
     byte[] GenTokenUp(@JsonRpcParam(value = "password") String password,
-                      @JsonRpcParam(value = "keywords") String[] keywords,
-                      @JsonRpcParam(value = "metadata") HashMap<String, String> metadata)
+                      @JsonRpcParam(value = "entityName") String entityName,
+                      @JsonRpcParam(value = "fileExtension") String fileExtension,
+                      @JsonRpcParam(value = "fileBytes") byte[] fileBytes)
         throws Exception;
+
 
 
     @JsonRpcErrors({
@@ -36,9 +38,10 @@ public interface ClientApi {
     @JsonRpcErrors({
     @JsonRpcError(exception=Throwable.class,
                   code=-1,
-                  message="GetQueryToken threw an exception.",
+                  message="Resolve threw an exception.",
                   data="")})
     List<String> Resolve(@JsonRpcParam(value = "password") String password,
                          @JsonRpcParam(value = "queryBytes") List<byte[]> queryBytes)
         throws Exception;
+
 }
