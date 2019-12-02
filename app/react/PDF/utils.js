@@ -22,7 +22,7 @@ function decrypt(transitmessage, pass) {
     padding: CryptoJS.pad.Pkcs7,
     mode: CryptoJS.mode.CBC,
   });
-  return decrypted.toString(CryptoJS.enc.Latin1);
+  return decrypted.toString(CryptoJS.enc.Base64);
 }
 
 function convertDataURIToBinary(raw) {
@@ -67,13 +67,11 @@ const PDFUtils = {
         .set('Accept', 'application/pdf')
         .set('X-Requested-With', 'XMLHttpRequest')
         .on('response', response => {
-          console.log('RESPONSE:');
           var encryptedPdf = response.text;
-          var decryptedPdf = decrypt(encryptedPdf, 'secret');
-          console.log(decryptedPdf);
+          var decryptedPdf = atob(decrypt(encryptedPdf, 'secret'));
           var pdfAsArray = convertDataURIToBinary(decryptedPdf);
 
-          PDFJS.getDocument({ data: decryptedPdf })
+          PDFJS.getDocument(pdfAsArray)
             .promise.then(pdf => {
               const pages = [];
               for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
@@ -106,10 +104,12 @@ const PDFUtils = {
 
   extractPageInfo: page =>
     new Promise(resolve => {
+      console.log('Page info');
       const textLayerDiv = document.createElement('div');
       textLayerDiv.className = 'textLayer';
 
       page.getTextContent({ normalizeWhitespace: true }).then(textContent => {
+        console.log(textContent);
         const textLayer = PDFJS.renderTextLayer({
           textContent,
           container: textLayerDiv,

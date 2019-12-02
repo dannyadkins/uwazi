@@ -82,7 +82,7 @@ export function getDocument(requestParams) {
     if (!isClient) {
       return doc;
     }
-    if (doc.pdfInfo || !doc.file) {
+    if (!doc.file) {
       return doc;
     }
     console.log('Calling');
