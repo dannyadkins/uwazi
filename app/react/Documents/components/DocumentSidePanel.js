@@ -18,7 +18,7 @@ import SidePanel from 'app/Layout/SidePanel';
 import DocumentSemanticSearchResults from 'app/SemanticSearch/components/DocumentResults';
 import { Icon } from 'UI';
 
-import { genTokenUpAndUpdateEMM, makeEmm } from '../../Uploads/actions/uploadsActions';
+import { moreKeywordsTokenUp, makeEmm } from '../../Uploads/actions/uploadsActions';
 
 import * as viewerModule from 'app/Viewer';
 import SearchText from './SearchText';
@@ -78,7 +78,7 @@ export class DocumentSidePanel extends Component {
   updateKeywords() {
     // makeEmm();
     //TODO: add keywords
-    genTokenUpAndUpdateEMM('secret', this.keywords, this.props.doc.toJS().title);
+    moreKeywordsTokenUp('secret', this.keywords, this.props.doc.toJS().title);
   }
 
   close() {

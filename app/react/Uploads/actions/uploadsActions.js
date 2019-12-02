@@ -108,6 +108,55 @@ export function makeEmm() {
   });
 }
 
+export function moreKeywordsTokenUp(secret, keywords, entityName) {
+  return new Promise(resolve => {
+    console.log('Calling genTokenUp. \n Entity: ' + entityName + '\n Keywords: ' + keywords);
+    superagent
+      .post('http://localhost:8081/client-api')
+      .set('Accept', 'application/json')
+      .set('Content-Type', 'application/json')
+      .set('X-Requested-With', 'XMLHttpRequest')
+      .set('Access-Control-Allow-Credentials', 'true')
+      .set('Access-Control-Allow-Origin', 'http://localhost:3000')
+      .send({
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'MoreKeywordsTokenUp',
+        params: {
+          password: secret,
+          keywords: keywords,
+          entityName: entityName,
+        },
+      })
+      .then(response => {
+        var tokenUp = JSON.parse(response.text).result;
+        console.log('TokenUp:' + tokenUp);
+
+        console.log('Calling UpdateEmm.');
+        superagent
+          .post('http://localhost:8081/server-api')
+          .set('Accept', 'application/json')
+          .set('Content-Type', 'application/json')
+          .set('X-Requested-With', 'XMLHttpRequest')
+          .set('Access-Control-Allow-Credentials', 'true')
+          .set('Access-Control-Allow-Origin', 'http://localhost:3000')
+          .send({
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'UpdateEmm',
+            params: {
+              pathToEmm: 'EMMs/admin.out',
+              tokenUpBytes: tokenUp,
+            },
+          })
+          .then(res2 => {
+            console.log(JSON.parse(res2.text));
+            resolve(JSON.parse(res2.text));
+          });
+      });
+  });
+}
+
 export function genTokenUpAndUpdateEMM(secret, entityName, extension, fileBytes) {
   return new Promise(resolve => {
     console.log('Calling genTokenUp. Entity: ' + entityName);
