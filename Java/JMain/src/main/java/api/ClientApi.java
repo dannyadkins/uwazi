@@ -24,6 +24,17 @@ public interface ClientApi {
         throws Exception;
 
 
+    @JsonRpcErrors({
+    @JsonRpcError(exception=Throwable.class,
+                  code=-1,
+                  message="MoreKeywordsTokenUp threw an exception.",
+                  data="")})
+    byte[] MoreKeywordsTokenUp(@JsonRpcParam(value = "password") String password,
+                               @JsonRpcParam(value = "keywords") String[] keywords,
+                               @JsonRpcParam(value = "entityName") String entytiName)
+        throws Exception;
+
+
 
     @JsonRpcErrors({
     @JsonRpcError(exception=Throwable.class,
