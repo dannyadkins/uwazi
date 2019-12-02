@@ -62,6 +62,23 @@ public class ClientApiImpl implements ClientApi {
     }
 
 
+    public byte[] MoreKeywordsTokenUp(String password, String[] keywords,
+                                      String entityName) throws Exception {
+
+        byte[] sk = GetSkFromPassword(password);
+
+        Multimap<String, String> multimap = ArrayListMultimap.create();
+        for (int i = 0; i < keywords.length; i++) {
+            multimap.put(keywords[i], entityName);
+        }
+
+        TreeMultimap<String, byte[]> tokenUp = DynRH.tokenUpdate(sk, multimap);
+
+        // Serialize `tokenUp` into byte[] to be passed into RPC.
+        return ObjSerializer.ToBytes(tokenUp);
+    }
+
+
     // TODO: Get this to work with multiple keywords instead of just one?
     public byte[][] GenQueryToken(String password, String keyword) throws Exception {
         byte[] sk = GetSkFromPassword(password);
