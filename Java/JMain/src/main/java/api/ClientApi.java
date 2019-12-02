@@ -18,8 +18,9 @@ public interface ClientApi {
                   message="GetTokenUp threw an exception.",
                   data="")})
     byte[] GenTokenUp(@JsonRpcParam(value = "password") String password,
-                      @JsonRpcParam(value = "fileName") String fileName,
-                      @JsonRpcParam(value = "file") byte[] fileBytes)
+                      @JsonRpcParam(value = "entityName") String entityName,
+                      @JsonRpcParam(value = "fileExtension") String fileExtension,
+                      @JsonRpcParam(value = "fileBytes") byte[] fileBytes)
         throws Exception;
 
 

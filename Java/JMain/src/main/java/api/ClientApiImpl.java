@@ -32,16 +32,17 @@ public class ClientApiImpl implements ClientApi {
     }
 
 
-    public byte[] GenTokenUp(String password, String fileName, byte[] fileBytes) throws Exception {
+    public byte[] GenTokenUp(String password, String entityName,
+                             String fileExtension, byte[] fileBytes) throws Exception {
         byte[] sk = GetSkFromPassword(password);
         
         // Convert files bytes into a File type.
-        File file = new File(fileName);
+        File file = new File(entityName + "." + fileExtension);
         try (FileOutputStream stream = new FileOutputStream(file)) {
             stream.write(fileBytes);
         }
         // Note: this is NOT secure. Users can create files on our system, and they're
-        // not in any /tmp directory or anything.
+        // not in any /tmp directory or anything with reduced permissions.
 
         // Empty the multimap from any previous keywords.
         TextExtractPar.lp1 = ArrayListMultimap.create();

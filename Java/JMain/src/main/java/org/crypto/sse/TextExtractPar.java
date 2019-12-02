@@ -178,6 +178,9 @@ public class TextExtractPar implements Serializable {
 			counter++;
 			FileInputStream fis = new FileInputStream(file);
 
+			// Store the fileName without its extension.
+			String baseFileName = file.getName().replaceFirst("[.][^.]+$", "");
+
 			// ***********************************************************************************************//
 
 			///////////////////// .docx /////////////////////////////
@@ -315,7 +318,7 @@ public class TextExtractPar implements Serializable {
 					&& file.getName().endsWith(".wmv") && file.getName().endsWith(".mpeg")
 					&& file.getName().endsWith(".mp4")) {
 
-				lines.add(file.getName());
+				lines.add(baseFileName);
 
 			}
 
@@ -381,13 +384,13 @@ public class TextExtractPar implements Serializable {
 				for (int j = 0; j < token.size(); j++) {
 
 					// Avoid counting occurrences of words in the same file
-					if (!lookup2.get(file.getName()).contains(token.get(j))) {
-						lookup2.put(file.getName(), token.get(j));
+					if (!lookup2.get(baseFileName).contains(token.get(j))) {
+						lookup2.put(baseFileName, token.get(j));
 					}
 
 					// Avoid counting occurrences of words in the same file
-					if (!lookup1.get(token.get(j)).contains(file.getName())) {
-						lookup1.put(token.get(j), file.getName());
+					if (!lookup1.get(token.get(j)).contains(baseFileName)) {
+						lookup1.put(token.get(j), baseFileName);
 					}
 
 				}
