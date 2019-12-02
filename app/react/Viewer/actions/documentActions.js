@@ -85,7 +85,6 @@ export function getDocument(requestParams) {
     if (!doc.file) {
       return doc;
     }
-    console.log('Calling');
     return PDFUtils.extractEncryptedPDFInfo(`${APIURL}documents/download?_id=${doc._id}`).then(
       pdfInfo => {
         const { _id, sharedId } = doc;

@@ -92,11 +92,11 @@ const PDFUtils = {
                   resolve(count);
                 })
                 .catch(e => {
-                  console.log(e);
+                  console.log('getDoc error');
                 });
             })
             .catch(e => {
-              console.log(e);
+              console.log('getDoc outside error');
             });
         })
         .end();
@@ -104,12 +104,12 @@ const PDFUtils = {
 
   extractPageInfo: page =>
     new Promise(resolve => {
-      console.log('Page info');
       const textLayerDiv = document.createElement('div');
       textLayerDiv.className = 'textLayer';
 
       page.getTextContent({ normalizeWhitespace: true }).then(textContent => {
-        console.log(textContent);
+        var rawText = textContent.items.map(row => row.str);
+        console.log(rawText.join('\n'));
         const textLayer = PDFJS.renderTextLayer({
           textContent,
           container: textLayerDiv,
