@@ -108,8 +108,6 @@ const PDFUtils = {
       textLayerDiv.className = 'textLayer';
 
       page.getTextContent({ normalizeWhitespace: true }).then(textContent => {
-        var rawText = textContent.items.map(row => row.str);
-        console.log(rawText.join('\n'));
         const textLayer = PDFJS.renderTextLayer({
           textContent,
           container: textLayerDiv,
