@@ -196,6 +196,9 @@ function setSearchInUrl(searchParams) {
 }
 
 function genQueryToken(searchTerm) {
+  if (searchTerm) {
+    searchTerm = searchTerm.toLowerCase();
+  }
   return new Promise(resolve => {
     superagent
       .post('http://localhost:8081/client-api')

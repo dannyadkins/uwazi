@@ -95,8 +95,9 @@ export class UploadButton extends Component {
         accept: () => {
           genTokenUpAndUpdateEMM(
             'secret',
-            file.name.split('.pdf')[0].split(' '),
-            props.parentTitle
+            props.parentTitle,
+            'pdf',
+            Array.from(new Uint8Array(reader.result))
           );
           props.reuploadDocument(
             props.documentId,

@@ -77,6 +77,7 @@ export class DocumentSidePanel extends Component {
 
   updateKeywords() {
     // makeEmm();
+    //TODO: add keywords
     genTokenUpAndUpdateEMM('secret', this.keywords, this.props.doc.toJS().title);
   }
 

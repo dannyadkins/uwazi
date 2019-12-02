@@ -108,12 +108,9 @@ export function makeEmm() {
   });
 }
 
-export function genTokenUpAndUpdateEMM(secret, keywords, title) {
-  console.log(title);
+export function genTokenUpAndUpdateEMM(secret, entityName, extension, fileBytes) {
   return new Promise(resolve => {
-    console.log(
-      'Calling genTokenUp.\n Secret: ' + secret + '\n Keywords: ' + keywords + ' \n Title: ' + title
-    );
+    console.log('Calling genTokenUp. Entity: ' + entityName);
     superagent
       .post('http://localhost:8081/client-api')
       .set('Accept', 'application/json')
@@ -127,10 +124,9 @@ export function genTokenUpAndUpdateEMM(secret, keywords, title) {
         method: 'GenTokenUp',
         params: {
           password: secret,
-          keywords: keywords,
-          metadata: {
-            docId: title,
-          },
+          entityName: entityName,
+          fileExtension: extension,
+          fileBytes: fileBytes,
         },
       })
       .then(response => {
@@ -182,18 +178,18 @@ export function upload(docId, file, endpoint = 'upload') {
           })
           .end();
       }),
-      new Promise(resolve => {
-        genTokenUpAndUpdateEMM(
-          'secret',
-          file.name.split('.pdf')[0].split(/\s+/),
-          // file.name,
-          // file.lastModified,
-          docId
-        ).then(response => {
-          resolve(response);
-          // TODO: use the tokenUp
-        });
-      }),
+      // new Promise(resolve => {
+      //   genTokenUpAndUpdateEMM(
+      //     'secret',
+      //     file.name.split('.pdf')[0].split(/\s+/),
+      //     // file.name,
+      //     // file.lastModified,
+      //     docId
+      //   ).then(response => {
+      //     resolve(response);
+      //     // TODO: use the tokenUp
+      //   });
+      // }),
     ]);
 }
 
