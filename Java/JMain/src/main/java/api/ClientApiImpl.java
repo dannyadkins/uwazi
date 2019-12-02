@@ -65,7 +65,7 @@ public class ClientApiImpl implements ClientApi {
     // TODO: Get this to work with multiple keywords instead of just one?
     public byte[][] GenQueryToken(String password, String keyword) throws Exception {
         byte[] sk = GetSkFromPassword(password);
-        return DynRH.genToken(sk, keyword);
+        return DynRH.genTokenFS(sk, keyword);
     }
 
 

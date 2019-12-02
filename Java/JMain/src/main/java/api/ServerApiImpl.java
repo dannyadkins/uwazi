@@ -51,6 +51,6 @@ public class ServerApiImpl implements ServerApi {
         // Read `emm` from file
         HashMap<String, byte[]> emm = (HashMap<String, byte[]>) ObjSerializer.FromFile(pathToEmm);
         
-        return DynRH.query(searchToken, emm); // TODO: Switch to FS?
+        return DynRH.queryFS(searchToken, emm); // TODO: Switch to FS?
     }
 }
