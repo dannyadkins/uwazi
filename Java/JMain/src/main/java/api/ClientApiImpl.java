@@ -53,6 +53,7 @@ public class ClientApiImpl implements ClientApi {
         TextExtractPar.extractTextPar(fileList);
         file.delete();
 
+        System.out.println("\n\n");
         System.out.println(TextExtractPar.lp1);
 
         TreeMultimap<String, byte[]> tokenUp = DynRH.tokenUpdate(sk, TextExtractPar.lp1);
