@@ -53,7 +53,7 @@ public class ClientApiImpl implements ClientApi {
         TextExtractPar.extractTextPar(fileList);
         file.delete();
 
-        System.out.println("\n\n");
+        System.out.println("\nKeyword map extracted from document:");
         System.out.println(TextExtractPar.lp1);
 
         TreeMultimap<String, byte[]> tokenUp = DynRH.tokenUpdate(sk, TextExtractPar.lp1);
@@ -73,6 +73,9 @@ public class ClientApiImpl implements ClientApi {
             multimap.put(keywords[i], entityName);
         }
 
+        System.out.println("\nAdditional keyword map:");
+        System.out.println(multimap);
+
         TreeMultimap<String, byte[]> tokenUp = DynRH.tokenUpdate(sk, multimap);
 
         // Serialize `tokenUp` into byte[] to be passed into RPC.
@@ -80,7 +83,6 @@ public class ClientApiImpl implements ClientApi {
     }
 
 
-    // TODO: Get this to work with multiple keywords instead of just one?
     public byte[][] GenQueryToken(String password, String keyword) throws Exception {
         byte[] sk = GetSkFromPassword(password);
         return DynRH.genTokenFS(sk, keyword);

@@ -35,10 +35,9 @@ test
 *.jar.original
 *.class
 
-Java/Clusion
-Java/JMain/.classpath
-Java/JMain/.project
-Java/JMain/.settings
-Java/JMain/.vscode
-Java/JMain/target
-Java/JMain/salt
+Java/.classpath
+Java/.project
+Java/.settings
+Java/.vscode
+Java/target
+Java/salt
