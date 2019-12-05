@@ -1,3 +1,5 @@
+/** @format */
+
 import { Field, Form, actions as formActions } from 'react-redux-form';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -54,15 +56,9 @@ export class SearchBar extends Component {
                 className="form-control"
                 autoComplete="off"
               />
-              <Icon
-                icon="times"
-                onClick={this.resetSearch}
-              />
+              <Icon icon="times" onClick={this.resetSearch} />
             </Field>
-            <Icon
-              icon="search"
-              onClick={this.submitSearch}
-            />
+            <Icon icon="search" onClick={this.submitSearch} />
           </div>
           {semanticSearchEnabled && (
             <button
@@ -82,7 +78,7 @@ export class SearchBar extends Component {
 }
 
 SearchBar.defaultProps = {
-  semanticSearchEnabled: false
+  semanticSearchEnabled: false,
 };
 
 SearchBar.propTypes = {
@@ -99,16 +95,22 @@ export function mapStateToProps(state, props) {
   const search = processFilters(state[props.storeKey].search, state[props.storeKey].filters.toJS());
   return {
     search,
-    semanticSearchEnabled: features.semanticSearch
+    semanticSearchEnabled: features.semanticSearch,
   };
 }
 
 function mapDispatchToProps(dispatch, props) {
-  return bindActionCreators({
-    searchDocuments,
-    change: formActions.change,
-    semanticSearch: submitNewSearch
-  }, wrapDispatch(dispatch, props.storeKey));
+  return bindActionCreators(
+    {
+      searchDocuments,
+      change: formActions.change,
+      semanticSearch: submitNewSearch,
+    },
+    wrapDispatch(dispatch, props.storeKey)
+  );
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SearchBar);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(SearchBar);

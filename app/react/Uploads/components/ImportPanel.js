@@ -1,3 +1,5 @@
+/** @format */
+
 import { connect } from 'react-redux';
 import Immutable from 'immutable';
 import PropTypes from 'prop-types';
@@ -10,7 +12,6 @@ import { Icon } from 'UI';
 import { LocalForm, Control } from 'react-redux-form';
 import { closeImportPanel, importData } from 'app/Uploads/actions/uploadsActions';
 import ImportProgress from './ImportProgress';
-
 
 export class ImportPanel extends Component {
   constructor(props) {
@@ -36,7 +37,11 @@ export class ImportPanel extends Component {
           <Icon icon="info-circle" size="2x" />
           <div className="force-ltr">
             <Translate>Upload a ZIP or CSV file.</Translate>&nbsp;
-            <a rel="noopener noreferrer" href="https://github.com/huridocs/uwazi/wiki/Import-CSV" target="_blank">
+            <a
+              rel="noopener noreferrer"
+              href="https://github.com/huridocs/uwazi/wiki/Import-CSV"
+              target="_blank"
+            >
               <Translate>Import instructions</Translate>
             </a>
           </div>
@@ -45,7 +50,9 @@ export class ImportPanel extends Component {
           <div className="form-group">
             <ul className="search__filter">
               <li>
-                <label htmlFor="file"><Translate>File</Translate></label>
+                <label htmlFor="file">
+                  <Translate>File</Translate>
+                </label>
               </li>
               <li className="wide">
                 <Control.file id="file" model=".file" accept=".zip,.csv" />
@@ -55,11 +62,17 @@ export class ImportPanel extends Component {
           <div className="form-group">
             <ul className="search__filter">
               <li>
-                <label htmlFor="template"><Translate>Template</Translate></label>
+                <label htmlFor="template">
+                  <Translate>Template</Translate>
+                </label>
               </li>
               <li className="wide">
-                <Control.select id="template" model=".template" >
-                  {templates.map(t => <option key={t.get('_id')} value={t.get('_id')}>{t.get('name')}</option>)}
+                <Control.select id="template" model=".template">
+                  {templates.map(t => (
+                    <option key={t.get('_id')} value={t.get('_id')}>
+                      {t.get('name')}
+                    </option>
+                  ))}
                 </Control.select>
               </li>
             </ul>
@@ -68,11 +81,13 @@ export class ImportPanel extends Component {
         </LocalForm>
         <div className="sidepanel-footer">
           <button form="import" type="submit" className="btn btn-primary">
-            <Icon icon="upload" /><span className="btn-label"><Translate>Import</Translate></span>
+            <Icon icon="upload" />
+            <span className="btn-label">
+              <Translate>Import</Translate>
+            </span>
           </button>
         </div>
       </div>
-
     );
   }
 
@@ -81,9 +96,7 @@ export class ImportPanel extends Component {
     return (
       <div className="alert alert-info">
         <Icon icon="info-circle" size="2x" />
-        <div className="force-ltr">
-        Uploading file {uploadProgress}%
-        </div>
+        <div className="force-ltr">Uploading file {uploadProgress}%</div>
       </div>
     );
   }
@@ -95,7 +108,7 @@ export class ImportPanel extends Component {
     }
 
     if (importStart || importProgress) {
-      return (<ImportProgress/>);
+      return <ImportProgress />;
     }
     return this.renderForm();
   }
@@ -119,7 +132,7 @@ ImportPanel.defaultProps = {
   open: false,
   uploadProgress: 0,
   importStart: false,
-  importProgress: 0
+  importProgress: 0,
 };
 
 ImportPanel.propTypes = {
@@ -129,19 +142,22 @@ ImportPanel.propTypes = {
   importData: PropTypes.func.isRequired,
   uploadProgress: PropTypes.number,
   importProgress: PropTypes.number,
-  importStart: PropTypes.bool
+  importStart: PropTypes.bool,
 };
 
 export const mapStateToProps = state => ({
-    open: state.importEntities.showImportPanel,
-    templates: state.templates,
-    uploadProgress: state.importEntities.importUploadProgress,
-    importStart: state.importEntities.importStart,
-    importProgress: state.importEntities.importProgress,
+  open: state.importEntities.showImportPanel,
+  templates: state.templates,
+  uploadProgress: state.importEntities.importUploadProgress,
+  importStart: state.importEntities.importStart,
+  importProgress: state.importEntities.importProgress,
 });
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({ closeImportPanel, importData }, dispatch);
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ImportPanel);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ImportPanel);

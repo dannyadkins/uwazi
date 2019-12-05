@@ -1,3 +1,5 @@
+/** @format */
+
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
@@ -6,10 +8,44 @@ import { advancedSort } from 'app/utils/advancedSort';
 import { isClient } from '../../utils';
 import PDFJS from '../PDFJS';
 import PDFPage from './PDFPage.js';
+import superagent from 'superagent';
+import CryptoJS from 'crypto-js';
+
+function decrypt(transitmessage, pass) {
+  var keySize = 256;
+  var ivSize = 128;
+  var iterations = 100;
+  var salt = CryptoJS.enc.Hex.parse(transitmessage.substr(0, 32));
+  var iv = CryptoJS.enc.Hex.parse(transitmessage.substr(32, 32));
+  var encrypted = transitmessage.substring(64);
+
+  var key = CryptoJS.PBKDF2(pass, salt, {
+    keySize: keySize / 32,
+    iterations: iterations,
+  });
+
+  var decrypted = CryptoJS.AES.decrypt(encrypted, key, {
+    iv: iv,
+    padding: CryptoJS.pad.Pkcs7,
+    mode: CryptoJS.mode.CBC,
+  });
+  return decrypted.toString(CryptoJS.enc.Base64);
+}
+
+function convertDataURIToBinary(raw) {
+  var rawLength = raw.length;
+  var array = new Uint8Array(new ArrayBuffer(rawLength));
+
+  for (var i = 0; i < rawLength; i++) {
+    array[i] = raw.charCodeAt(i);
+  }
+  return array;
+}
 
 class PDF extends Component {
   constructor(props) {
     super(props);
+
     this.state = { pdf: { numPages: 0 } };
     this.pagesLoaded = {};
     this.loadDocument(props.file);
@@ -25,7 +61,7 @@ class PDF extends Component {
 
   componentDidMount() {
     if (this.pdfContainer) {
-      document.addEventListener('textlayerrendered', (e) => {
+      document.addEventListener('textlayerrendered', e => {
         this.pageLoaded(e.detail.pageNumber);
       });
     }
@@ -41,11 +77,13 @@ class PDF extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return nextProps.file !== this.props.file ||
-    nextProps.filename !== this.props.filename ||
-    nextProps.pdfInfo !== this.props.pdfInfo ||
-    nextProps.style !== this.props.style ||
-    nextState.pdf !== this.state.pdf;
+    return (
+      nextProps.file !== this.props.file ||
+      nextProps.filename !== this.props.filename ||
+      nextProps.pdfInfo !== this.props.pdfInfo ||
+      nextProps.style !== this.props.style ||
+      nextState.pdf !== this.state.pdf
+    );
   }
 
   componentDidUpdate() {
@@ -76,11 +114,26 @@ class PDF extends Component {
   }
 
   loadDocument(file) {
-    if (isClient) {
-      PDFJS.getDocument(file).promise.then((pdf) => {
-        this.setState({ pdf });
-      });
-    }
+    return new Promise(resolve => {
+      superagent
+        .get(file)
+        .set('Accept', 'application/pdf')
+        .set('X-Requested-With', 'XMLHttpRequest')
+        .on('response', response => {
+          var encryptedPdf = response.text;
+          var decryptedPdf = atob(decrypt(encryptedPdf, 'secret'));
+          var pdfAsArray = convertDataURIToBinary(decryptedPdf);
+          if (isClient) {
+            PDFJS.getDocument(pdfAsArray).promise.then(pdf => {
+              this.setState({ pdf });
+              resolve();
+            });
+          }
+        })
+        .catch(e => {
+          console.log(e);
+        });
+    });
   }
 
   pageUnloaded(numPage) {
@@ -94,7 +147,10 @@ class PDF extends Component {
 
   pageLoaded(numPage) {
     this.pagesLoaded[numPage] = true;
-    const allPagesLoaded = Object.keys(this.pagesLoaded).map(p => this.pagesLoaded[p]).filter(p => !p).length === 0;
+    const allPagesLoaded =
+      Object.keys(this.pagesLoaded)
+        .map(p => this.pagesLoaded[p])
+        .filter(p => !p).length === 0;
     if (allPagesLoaded) {
       this.loaded();
     }
@@ -117,31 +173,42 @@ class PDF extends Component {
 
     if (allConsecutives) {
       const pdfInfo = this.props.pdfInfo.toJS();
-      const start = pdfInfo[Math.min.apply(null, Object.keys(this.pagesLoaded).map(n => parseInt(n, 10))) - 1] || { chars: 0 };
-      const end = pdfInfo[Math.max.apply(null, Object.keys(this.pagesLoaded).map(n => parseInt(n, 10)))] || { chars: 0 };
+      const start = pdfInfo[
+        Math.min.apply(null, Object.keys(this.pagesLoaded).map(n => parseInt(n, 10))) - 1
+      ] || { chars: 0 };
+      const end = pdfInfo[
+        Math.max.apply(null, Object.keys(this.pagesLoaded).map(n => parseInt(n, 10)))
+      ] || { chars: 0 };
       this.props.onLoad({
         start: start.chars,
         end: end.chars,
-        pages
+        pages,
       });
     }
   }
 
   render() {
     return (
-      <div ref={(ref) => { this.pdfContainer = ref; }} style={this.props.style}>
+      <div
+        ref={ref => {
+          this.pdfContainer = ref;
+        }}
+        style={this.props.style}
+      >
         {(() => {
           const pages = [];
           for (let page = 1; page <= this.state.pdf.numPages; page += 1) {
-            pages.push(<PDFPage
-              onUnload={this.pageUnloaded}
-              onLoading={this.pageLoading}
-              onVisible={this.onPageVisible}
-              onHidden={this.onPageHidden}
-              key={page}
-              page={page}
-              pdf={this.state.pdf}
-            />);
+            pages.push(
+              <PDFPage
+                onUnload={this.pageUnloaded}
+                onLoading={this.pageLoading}
+                onVisible={this.onPageVisible}
+                onHidden={this.onPageHidden}
+                key={page}
+                page={page}
+                pdf={this.state.pdf}
+              />
+            );
           }
           return pages;
         })()}

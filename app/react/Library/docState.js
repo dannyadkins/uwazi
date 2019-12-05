@@ -1,3 +1,5 @@
+/** @format */
+
 import { createSelector } from 'reselect';
 
 const docState = createSelector(
@@ -11,7 +13,7 @@ const docState = createSelector(
       return {
         progress,
         status: 'processing',
-        message: 'Uploading...'
+        message: 'Uploading...',
       };
     }
 
@@ -19,7 +21,7 @@ const docState = createSelector(
       return {
         progress: 100,
         status: 'processing',
-        message: 'Processing...'
+        message: 'Processing...',
       };
     }
 
@@ -27,7 +29,7 @@ const docState = createSelector(
       return {
         progress,
         status: 'warning',
-        message: 'No type selected'
+        message: 'No type selected',
       };
     }
 
@@ -35,14 +37,14 @@ const docState = createSelector(
       return {
         progress,
         status: 'danger',
-        message: 'Upload failed'
+        message: 'Upload failed',
       };
     }
 
     if (processed === false && !isEntity) {
       return {
-        status: 'danger',
-        message: 'Conversion failed'
+        status: 'processing',
+        message: 'Encrypted PDF',
       };
     }
 

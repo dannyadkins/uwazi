@@ -1,3 +1,5 @@
+/** @format */
+
 import * as types from 'app/Library/actions/actionTypes';
 import api from 'app/Search/SearchAPI';
 import { notificationActions } from 'app/Notifications';
@@ -10,6 +12,7 @@ import referencesAPI from 'app/Viewer/referencesAPI';
 import { api as entitiesAPI } from 'app/Entities';
 import { toUrlParams } from 'shared/JSONRequest';
 import { RequestParams } from 'app/utils/RequestParams';
+import superagent from 'superagent';
 
 export function enterLibrary() {
   return { type: types.ENTER_LIBRARY };
@@ -25,7 +28,10 @@ export function selectDocument(doc) {
     if (doc.toJS) {
       document = doc.toJS();
     }
-    if (getState().library.sidepanel.tab === 'semantic-search-results' && !document.semanticSearch) {
+    if (
+      getState().library.sidepanel.tab === 'semantic-search-results' &&
+      !document.semanticSearch
+    ) {
       dispatch(actions.set('library.sidepanel.tab', ''));
     }
     dispatch({ type: types.SELECT_DOCUMENT, doc: document });
@@ -33,9 +39,8 @@ export function selectDocument(doc) {
 }
 
 export function getAndSelectDocument(sharedId) {
-  return (dispatch) => {
-    entitiesAPI.get(new RequestParams({ sharedId }))
-    .then((entity) => {
+  return dispatch => {
+    entitiesAPI.get(new RequestParams({ sharedId })).then(entity => {
       dispatch({ type: types.SELECT_SINGLE_DOCUMENT, doc: entity[0] });
     });
   };
@@ -78,7 +83,7 @@ export function unsetDocuments() {
 }
 
 export function setTemplates(templates, thesauris) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch({ type: types.SET_LIBRARY_TEMPLATES, templates, thesauris });
   };
 }
@@ -125,7 +130,10 @@ export function filterIsEmpty(value) {
   }
 
   if (typeof value === 'object') {
-    const hasValue = Object.keys(value).reduce((result, key) => result || Boolean(value[key]), false);
+    const hasValue = Object.keys(value).reduce(
+      (result, key) => result || Boolean(value[key]),
+      false
+    );
     return !hasValue;
   }
 
@@ -136,14 +144,14 @@ export function processFilters(readOnlySearch, filters, limit) {
   const search = Object.assign({ filters: {} }, readOnlySearch);
   search.filters = {};
 
-  filters.properties.forEach((property) => {
+  filters.properties.forEach(property => {
     if (!filterIsEmpty(readOnlySearch.filters[property.name]) && !property.filters) {
       search.filters[property.name] = readOnlySearch.filters[property.name];
     }
 
     if (property.filters) {
       const searchFilter = Object.assign({}, readOnlySearch.filters[property.name]);
-      property.filters.forEach((filter) => {
+      property.filters.forEach(filter => {
         if (filterIsEmpty(searchFilter[filter.name])) {
           delete searchFilter[filter.name];
         }
@@ -161,7 +169,7 @@ export function processFilters(readOnlySearch, filters, limit) {
 }
 
 export function encodeSearch(search, appendQ = true) {
-  Object.keys(search).forEach((key) => {
+  Object.keys(search).forEach(key => {
     if (search[key] && search[key].length === 0) {
       delete search[key];
     }
@@ -180,11 +188,109 @@ export function encodeSearch(search, appendQ = true) {
 
 function setSearchInUrl(searchParams) {
   const { pathname } = browserHistory.getCurrentLocation();
-  const path = (`${pathname}/`).replace(/\/\//g, '/');
+  const path = `${pathname}/`.replace(/\/\//g, '/');
   const query = browserHistory.getCurrentLocation().query || {};
 
   query.q = encodeSearch(searchParams, false);
   browserHistory.push(path + toUrlParams(query));
+}
+
+function genQueryToken(searchTerm) {
+  if (searchTerm) {
+    searchTerm = searchTerm.toLowerCase();
+  }
+  return new Promise(resolve => {
+    superagent
+      .post('http://localhost:8081/client-api')
+      .set('Accept', 'application/json')
+      .set('Content-Type', 'application/json')
+      .set('X-Requested-With', 'XMLHttpRequest')
+      .set('Access-Control-Allow-Credentials', 'true')
+      .set('Access-Control-Allow-Origin', 'http://localhost:3000')
+      .send({
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'GenQueryToken',
+        params: {
+          password: 'secret',
+          keyword: searchTerm,
+        },
+      })
+      .then(res => {
+        console.log('Query token:');
+        console.log(JSON.parse(res.text).result);
+        resolve(JSON.parse(res.text).result);
+      });
+  });
+}
+
+export function encryptedSearch(searchBytes, user) {
+  console.log('Performing encrypted search.');
+
+  if (!searchBytes) {
+    return;
+  }
+  if (searchBytes.split) {
+    searchBytes = searchBytes.split(',');
+  }
+  return new Promise(resolve => {
+    superagent
+      .post('http://localhost:8081/server-api')
+      .set('Accept', 'application/json')
+      .set('Content-Type', 'application/json')
+      .set('X-Requested-With', 'XMLHttpRequest')
+      .set('Access-Control-Allow-Credentials', 'true')
+      .set('Access-Control-Allow-Origin', 'http://localhost:3000')
+      .send({
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'Query',
+        params: {
+          pathToEmm: 'EMMs/admin.out',
+          searchToken: searchBytes,
+        },
+      })
+      .then(res => {
+        console.log('Encrypted search response:');
+        console.log(JSON.parse(res.text).result);
+        resolve(JSON.parse(res.text).result);
+      })
+      .catch(e => {
+        console.log(e);
+        resolve([]);
+      });
+  });
+}
+
+export function resolveEncryptedSearch(queryResponse) {
+  console.log('Resolving the query response on the client side.');
+  return new Promise(resolve => {
+    superagent
+      .post('http://localhost:8081/client-api')
+      .set('Accept', 'application/json')
+      .set('Content-Type', 'application/json')
+      .set('X-Requested-With', 'XMLHttpRequest')
+      .set('Access-Control-Allow-Credentials', 'true')
+      .set('Access-Control-Allow-Origin', 'http://localhost:3000')
+      .send({
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'Resolve',
+        params: {
+          password: 'secret',
+          queryBytes: queryResponse,
+        },
+      })
+      .then(res => {
+        console.log('Resolved results:');
+        console.log(JSON.parse(res.text).result);
+        resolve(JSON.parse(res.text).result);
+      })
+      .catch(e => {
+        console.log(e);
+        resolve([]);
+      });
+  });
 }
 
 export function searchDocuments({ search, filters }, storeKey, limit = 30) {
@@ -196,14 +302,25 @@ export function searchDocuments({ search, filters }, storeKey, limit = 30) {
     const finalSearchParams = processFilters(search, currentFilters, limit);
     finalSearchParams.searchTerm = state.search.searchTerm;
 
-    const currentSearchParams = rison.decode(decodeURIComponent(browserHistory.getCurrentLocation().q || '()'));
-    if (finalSearchParams.searchTerm && finalSearchParams.searchTerm !== currentSearchParams.searchTerm) {
+    const currentSearchParams = rison.decode(
+      decodeURIComponent(browserHistory.getCurrentLocation().q || '()')
+    );
+    if (
+      finalSearchParams.searchTerm &&
+      finalSearchParams.searchTerm !== currentSearchParams.searchTerm
+    ) {
       finalSearchParams.sort = '_score';
     }
 
     if (search.userSelectedSorting) dispatch(actions.set(`${storeKey}.selectedSorting`, search));
-
-    setSearchInUrl(finalSearchParams);
+    genQueryToken(finalSearchParams.searchTerm).then(queryToken => {
+      encryptedSearch(queryToken, 'admin').then(results => {
+        resolveEncryptedSearch(results).then(docIDs => {
+          finalSearchParams.sort = finalSearchParams.sort + 'ENC_SRCH@' + docIDs;
+          setSearchInUrl(finalSearchParams);
+        });
+      });
+    });
   };
 }
 
@@ -220,27 +337,27 @@ export function updateEntities(updatedDocs) {
 }
 
 export function searchSnippets(searchTerm, sharedId, storeKey) {
-  return dispatch => api.searchSnippets(new RequestParams({ searchTerm, id: sharedId }))
-  .then((snippets) => {
-    dispatch(actions.set(`${storeKey}.sidepanel.snippets`, snippets));
-    return snippets;
-  });
+  return dispatch =>
+    api.searchSnippets(new RequestParams({ searchTerm, id: sharedId })).then(snippets => {
+      dispatch(actions.set(`${storeKey}.sidepanel.snippets`, snippets));
+      return snippets;
+    });
 }
 
 export function saveDocument(doc, formKey) {
-  return dispatch => documentsApi.save(new RequestParams(doc))
-  .then((updatedDoc) => {
-    dispatch(notificationActions.notify('Document updated', 'success'));
-    dispatch(formActions.reset(formKey));
-    dispatch(updateEntity(updatedDoc));
-    dispatch(actions.updateIn('library.markers', ['rows'], updatedDoc));
-    dispatch(selectSingleDocument(updatedDoc));
-  });
+  return dispatch =>
+    documentsApi.save(new RequestParams(doc)).then(updatedDoc => {
+      dispatch(notificationActions.notify('Document updated', 'success'));
+      dispatch(formActions.reset(formKey));
+      dispatch(updateEntity(updatedDoc));
+      dispatch(actions.updateIn('library.markers', ['rows'], updatedDoc));
+      dispatch(selectSingleDocument(updatedDoc));
+    });
 }
 
 export function multipleUpdate(entities, values) {
-  return (dispatch) => {
-    const updatedEntities = entities.toJS().map((_entity) => {
+  return dispatch => {
+    const updatedEntities = entities.toJS().map(_entity => {
       const entity = { ..._entity };
       entity.metadata = Object.assign({}, entity.metadata, values.metadata);
       if (values.icon) {
@@ -250,8 +367,7 @@ export function multipleUpdate(entities, values) {
     });
 
     const ids = updatedEntities.map(entity => entity.sharedId);
-    return entitiesAPI.multipleUpdate(new RequestParams({ ids, values }))
-    .then(() => {
+    return entitiesAPI.multipleUpdate(new RequestParams({ ids, values })).then(() => {
       dispatch(notificationActions.notify('Update success', 'success'));
       dispatch(updateEntities(updatedEntities));
     });
@@ -259,21 +375,21 @@ export function multipleUpdate(entities, values) {
 }
 
 export function saveEntity(entity, formModel) {
-  return dispatch => entitiesAPI.save(new RequestParams(entity))
-  .then((updatedDoc) => {
-    dispatch(formActions.reset(formModel));
-    dispatch(unselectAllDocuments());
-    if (entity._id) {
-      dispatch(notificationActions.notify('Entity updated', 'success'));
-      dispatch(updateEntity(updatedDoc));
-      dispatch(actions.updateIn('library.markers', ['rows'], updatedDoc));
-    } else {
-      dispatch(notificationActions.notify('Entity created', 'success'));
-      dispatch(elementCreated(updatedDoc));
-    }
+  return dispatch =>
+    entitiesAPI.save(new RequestParams(entity)).then(updatedDoc => {
+      dispatch(formActions.reset(formModel));
+      dispatch(unselectAllDocuments());
+      if (entity._id) {
+        dispatch(notificationActions.notify('Entity updated', 'success'));
+        dispatch(updateEntity(updatedDoc));
+        dispatch(actions.updateIn('library.markers', ['rows'], updatedDoc));
+      } else {
+        dispatch(notificationActions.notify('Entity created', 'success'));
+        dispatch(elementCreated(updatedDoc));
+      }
 
-    dispatch(selectSingleDocument(updatedDoc));
-  });
+      dispatch(selectSingleDocument(updatedDoc));
+    });
 }
 
 export function removeDocument(doc) {
@@ -285,21 +401,21 @@ export function removeDocuments(docs) {
 }
 
 export function deleteDocument(doc) {
-  return dispatch => documentsApi.delete(new RequestParams({ sharedId: doc.sharedId }))
-  .then(() => {
-    dispatch(notificationActions.notify('Document deleted', 'success'));
-    dispatch(unselectAllDocuments());
-    dispatch(removeDocument(doc));
-  });
+  return dispatch =>
+    documentsApi.delete(new RequestParams({ sharedId: doc.sharedId })).then(() => {
+      dispatch(notificationActions.notify('Document deleted', 'success'));
+      dispatch(unselectAllDocuments());
+      dispatch(removeDocument(doc));
+    });
 }
 
 export function deleteEntity(entity) {
-  return dispatch => entitiesAPI.delete(entity)
-  .then(() => {
-    dispatch(notificationActions.notify('Entity deleted', 'success'));
-    dispatch(unselectDocument(entity._id));
-    dispatch(removeDocument(entity));
-  });
+  return dispatch =>
+    entitiesAPI.delete(entity).then(() => {
+      dispatch(notificationActions.notify('Entity deleted', 'success'));
+      dispatch(unselectDocument(entity._id));
+      dispatch(removeDocument(entity));
+    });
 }
 
 export function loadMoreDocuments(storeKey, amount) {
@@ -313,8 +429,8 @@ export function getSuggestions() {
 }
 
 export function getDocumentReferences(sharedId, storeKey) {
-  return dispatch => referencesAPI.get(new RequestParams({ sharedId }))
-  .then((references) => {
-    dispatch(actions.set(`${storeKey}.sidepanel.references`, references));
-  });
+  return dispatch =>
+    referencesAPI.get(new RequestParams({ sharedId })).then(references => {
+      dispatch(actions.set(`${storeKey}.sidepanel.references`, references));
+    });
 }
