@@ -34,19 +34,19 @@ transfer happens entirely through Uwazi.
 
 ## Demo & Presentation
 
-[UwaziES Demo - Youtube](https://www.youtube.com/watch?v=k_Rg60yn0Sc&feature=youtu.be)
-[Presentation - Google Slides](https://docs.google.com/presentation/d/1iSW1vfI9qD5v8LKAPG-5Z3Ofkrd_TvT3leJla2f1nqg/edit?usp=sharing)
+- [UwaziES Demo - Youtube](https://www.youtube.com/watch?v=k_Rg60yn0Sc)
+- [Presentation - Google Slides](https://docs.google.com/presentation/d/1iSW1vfI9qD5v8LKAPG-5Z3Ofkrd_TvT3leJla2f1nqg/edit?usp=sharing)
 
 ## How to run
 
-Follow instructions @ https://github.com/huridocs/uwazi.
+- Follow instructions @ https://github.com/huridocs/uwazi (and ensure you are running Node 8.10).
+- Build the Java client with `cd Java && mvn clean install`
+- Run the Java client with `java -jar target/uwazi-es-0.1.jar`
 
-## JavaScript Relevant Notes
-
-Interfaces with JRPC server as stated above on Upload, .
-Encrypts documents with CryptoJS.
-View documents with PDFjs.
-Search documents by title via existing Uwazi architecture.
+## JavaScript packages
+- Encrypts documents with CryptoJS
+- View documents with PDFjs
+- Search documents by title via existing Uwazi architecture
 
 <br><br>
 
